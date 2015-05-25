@@ -84,3 +84,39 @@ The `plumb start` command will query the bucket for all its key vals and constru
 *v0.3.0*
 
 - `plumb compile`?
+
+# Who handles what?
+The `plumb` command *should* handle bundling and packaging, since this is the safest way to keep secrets from leaking in plain-text. Also, this lets people build and play around locally.
+
+Unfortunately, it means that things like `docker`, `fleet`, `git`, etc. must be installed on the host machines. It's not a terribly tall order, but it can be annoying to install all the dependencies.
+
+We can work around this requirement by letting `plumb` commands talk to a remote server that handles *all the work*. Unfortunately, this doesn't work as nicely, since someone can't play around without an internet connection. Also, if the connection is broken, etc. we have to recover, etc. etc.
+
+Thus, it's safest to let all `plumb` commands work locally. Furthermore, we can work around this by hosting `plumb` on a server and letting folks `git push` to it. The only interface to `plumb` in this case is a `git push`. I'm happy to let that hide all the gory details.
+
+Now, here's the big issue: how does one share pipelines and dependency graphs? The `plumb` tool can certainly compute it and store local information in a BoltDB, but if multiple users want to collaborate on a pipeline, they'd have to share the BoltDB--and the bundled images! This is where having a `plumbd` acting as a server might be a good idea. Plus, `git push` no longer works nicely since the user might want to be able to look at the graph from the command line, etc.
+
+I can think of two solutions:
+
+1. The `plumb` tool is stand alone; we can host `plumb` and its monitoring UIs on our cluster and show IT staffs how to install it. The interface is just a UI--so `git push` gets translated into a nice UI. The developers only need to write `.plumb.yml` files and `git push` to our server. (Kind of like Travis for data.)
+2. We write a `plumbd` server that provides this information.
+
+The first is `plumb` as a service, while the second exposes all the internals of `plumb` to users (sort of).
+
+I don't know the right solution, but I do think simplicity is key. Users need to know roughly what happens when their code is run through the `plumb` tool. It's also nice to be able to run it themselves on a local machine.
+
+What I'd really like is for `plumb submit` to just create a bunch of Fleet service files, push the images, and submit the service files to a remote server. The whole thing is standalone at that point and can run without any other dependencies.
+
+The graph is stored locally, so you can see all that stuff locally, of course, but not remotely. One possible solution is to store all the graph / dependency metadata into `etcd` or just backup the `db` onto the server in its entirety (but that option copies over all graphs and not just the one you submitted). When another user connects to the server, the `plumb get` (or something) command queries `etcd` for the relevant info and makes a copy in Bolt. This means a user can actually have "graphs" that live on two different servers--kind of cool (and git-like). You'd have to do a `plumb sync` (or `plumb update`) to ensure your local graph is consistent with the server's graph, but that's kind of nice--not sure if Bolt has "commit" semantics, so I'm not sure if it's possible to rollback "diffs".
+
+This means you can have **distributed data processing pipelines**. An alternative to using Bolt is to use `git` to track changes to the processing graph. We can keep that information in a *text file* under version control. Then the "graph" can be stored on the server via `git` and cloned by other users. One possibility is for this to just be a copy of all the `yml` files for the enhancers in the pipeline. Version control can add or remove files and do diffs pretty easily. The local `plumb` tool can recreate the graph for its local BoltDB. (This means IDs, etc. must be hashed instead of uniquely generated.)
+
+Any modifications are done with the *client* talking to individual units in the server. This does open up the possibility of mutiple clients attempting to modify the graph *at the same time*. But how often does that happen with `git`? Furthermore, we could disallow multiple users from modifying the graph by requiring that all users have their graphs in sync--so a `plumb sync` will destroy (?) your local graph and sync you with the server.
+
+## Ok, now what?
+
+So after much internal debate: it seems like a good design for sharing data processing pipelines is the `git` model. Individual developers can have their own data processing pipelines to explore ideas and hypotheses. These pipelines are backed by Docker and must be run on CoreOS. When folks are happy with it, something like `plumb submit` can deploy the thing for real.
+
+When something like `plumb submit` is called, this also sends metadata (TBD) to the server--assuming the server is ready for the "fast-forward". This metadata ought to be sufficient for anyone else to reconstruct the processing pipeline with `plumb pull` or `plumb update`. The best design for this is to let `git` handle changes--so it's best to store the metadata in a `git` repository (Issue: do we store environment variables that might contain secret keys?). I'm no longer sure if this requires a BoltDB, unless a lot of information must be computed about the graph each time.
+
+This means `plumb create` needs to create a local `git` repo for each pipeline. And `plumb clone` will also create a local `git` repo for the pipeline it's trying to pull. The `plumb` tool can manage all the commits (and messages) locally. This puts the pipeline under version control.
