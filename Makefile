@@ -1,6 +1,22 @@
-.PHONY: test clean
+# Whether to build debug
+GO_BINDATA_DEBUG=true
+
+.PHONY: build debug release all clean test
+all: debug
+
+debug: GO_BINDATA_DEBUG=true
+debug: build test
+
+release: GO_BINDATA_DEBUG=false
+release: build test
+
+build:
+	sh scripts/build.sh
+
 test:
-	sh scripts/test.sh
+	go test -cover ./...
 
 clean:
-	rm -rf neo4j* test-env
+	rm data/* plumb && \
+	rmdir data && \
+	go clean
