@@ -10,4 +10,3 @@ numpy
 scipy
 tinys3
 nltk
-beautifulsoup
