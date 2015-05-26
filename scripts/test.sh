@@ -26,7 +26,7 @@ then
 fi
 
 echo "Installing virtualenv..."
-virtualenv test-env
+virtualenv --system-site-packages test-env
 source test-env/bin/activate
 {
   pip install nose coverage && \
