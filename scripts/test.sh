@@ -16,13 +16,15 @@ else
     mv $DIST_NAME $NEO4J_TEST_DIRECTORY
 fi
 
-# check if the user has the neo4j binary, if so, attempt to stop any
-# existing servers
-status=""
-if hash neo4j 2>/dev/null
-then
-  echo "Stopping any existing neo4j servers"
-  status=$(neo4j stop)
+if [ -z "$TRAVIS" ]; then
+  # check if the user has the neo4j binary, if so, attempt to stop any
+  # existing servers
+  status=""
+  if hash neo4j 2>/dev/null
+  then
+    echo "Stopping any existing neo4j servers"
+    status=$(neo4j stop)
+  fi
 fi
 
 echo "Installing virtualenv..."
@@ -36,8 +38,10 @@ source test-env/bin/activate
 
 echo "Deactivating test environment"
 deactivate
-if [[ "$status" =~ "Stopping" ]];
-then
-  echo "Restarting stopped neo4j instance"
-  neo4j start
+if [ -z "$TRAVIS" ]; then
+  if [[ "$status" =~ "Stopping" ]];
+  then
+    echo "Restarting stopped neo4j instance"
+    neo4j start
+  fi
 fi
