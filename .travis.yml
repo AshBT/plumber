@@ -1,18 +1,23 @@
 language: python
 sudo: required
 before_install:
-    - sudo apt-get update -qq
-    # Use standard ubuntu packages in their default version
-    - sudo apt-get install -qq python-dev python-scipy
-    - git clone https://github.com/Itseez/opencv.git
-    - cd opencv
-    - git checkout 2.4.11
-    - mkdir build
-    - cd build
-    - cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_opencv_java=OFF -DBUILD_JASPER=ON -DWITH_JASPER=ON -DBUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF -DWITH_OPENEXR=OFF -DBUILD_PNG=ON -DWITH_PNG=ON -DWITH_TIFF=ON -DBUILD_TIFF=ON -DWITH_WEBP=OFF -DWITH_JPEG=ON -DBUILD_JPEG=ON ..
-    - make -j4
-    - sudo make -j4 install
-    - cd ../..
+  - openssl aes-256-cbc -K $encrypted_6d2b7347f8c6_key -iv $encrypted_6d2b7347f8c6_iv
+    -in envvars.enc -out envvars -d
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq python-dev python-scipy
+  - git clone https://github.com/Itseez/opencv.git
+  - cd opencv
+  - git checkout 2.4.11
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_opencv_java=OFF
+    -DBUILD_JASPER=ON -DWITH_JASPER=ON -DBUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF
+    -DBUILD_PERF_TESTS=OFF -DWITH_OPENEXR=OFF -DBUILD_PNG=ON -DWITH_PNG=ON -DWITH_TIFF=ON
+    -DBUILD_TIFF=ON -DWITH_WEBP=OFF -DWITH_JPEG=ON -DBUILD_JPEG=ON ..
+  - make -j4
+  - sudo make -j4 install
+  - cd ../..
 install:
-    - pip install py2neo
+  - pip install py2neo
+  - source envvars
 script: make test
