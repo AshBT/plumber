@@ -24,6 +24,9 @@ const bundleConfig = ".plumb.yml"
 // types.
 const dockerfileTemplate = `
 FROM python:2-onbuild
+{{ range .Plumb.Install }}
+RUN {{ . }}
+{{ end }}
 RUN pip install bottle
 EXPOSE 9456
 {{ range .Plumb.Env }}

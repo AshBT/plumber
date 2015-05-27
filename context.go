@@ -12,4 +12,5 @@ type PlumbContext struct {
   Inputs []Field `yaml:",flow"`
   Outputs []Field `yaml:",flow"`
   Env []string `yaml:",flow,omitempty"`
+  Install []string `yaml:",flow,omitempty"`
 }
