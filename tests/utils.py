@@ -7,18 +7,18 @@ def check_exists(x, attribute):
     try:
         x[attribute]
     except KeyError:
-        assert False
+        assert False, "missing key {}".format(attribute)
 
 def check_not_exists(x, attribute):
     try:
         x[attribute]
     except KeyError:
-        assert True
+        assert True, "key {} unexpectedly exists".format(attribute)
 
 def check_ad_equals_expected(ad, expected, ignore_fields=[]):
     # check that all expected keys are present
     for key in expected:
-        assert (ad.properties[key] is not None)
+        assert (ad.properties[key] is not None), ("{} is missing".format(key))
 
     for key in ad.properties:
         a = ad[key]
