@@ -5,7 +5,8 @@ from plugins.enhancer import Enhancer, SQLEnhancer
 from py2neo import Node, Graph
 import requests
 import os
-from .. utils import check_equals, check_exists, check_not_exists
+from .. utils import check_exists, check_not_exists
+import nose.tools
 
 class MyEnhancer(Enhancer):
     def cleanup(self):
@@ -52,9 +53,9 @@ class TestEnhancer(object):
         # use the ENHANCER's DB to check that results are as expected
         records = self.ENHANCER.db.cypher.execute("MATCH (ad) RETURN ad")
         for result in records:
-            yield check_equals, result.ad['foobar'], 'inserted'
+            yield nose.tools.eq_, result.ad['foobar'], 'inserted'
 
-        yield check_equals, self.ENHANCER.cleanup_called, True
+        yield nose.tools.eq_, self.ENHANCER.cleanup_called, True
 
     def test_sql_enhancer_run(self):
         self.SQL_ENHANCER.run(skip_on_error=False)
@@ -69,4 +70,4 @@ class TestEnhancer(object):
         yield check_not_exists, result, 'title'
         yield check_not_exists, result, 'website'
         # check that the phone number is correctly populated
-        yield check_equals, result['phone'], "5555559574"
+        yield nose.tools.eq_, result['phone'], "5555559574"
