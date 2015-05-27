@@ -48,8 +48,14 @@ class Enhancer(object):
 					log.debug("==> %s" % str(node))
 					try:
 						self.enhance(node)	# this might modify node
-						log.debug("<== %s" % str(node))
+						# remove any empty lists--replace with empty string?
+						# see py2neo issue: https://github.com/nigelsmall/py2neo/issues/395
+						for p in node.properties:
+							elem = node.properties[p]
+							if isinstance(elem, list) and not elem:
+								node.properties[p] = ""
 						node.push()			# push any changes to the server
+						log.debug("<== %s" % str(node))
 					except Exception as e:
 						log.error("[Exception] Skipping record; caught an exception during handling: '%s'" % e)
 						log.error(traceback.format_exc())
