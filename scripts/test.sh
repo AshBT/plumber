@@ -27,18 +27,20 @@ if [ -z "$TRAVIS" ]; then
   fi
 fi
 
-echo "Installing virtualenv..."
-virtualenv --system-site-packages test-env
-source test-env/bin/activate
+if [ -z "$TRAVIS" ]; then
+  echo "Installing virtualenv..."
+  virtualenv --system-site-packages test-env
+  source test-env/bin/activate
+fi
 {
   pip install nose coverage && \
   pip install -r requirements.txt && \
   NEO_PASS=password python `which nosetests` --with-coverage --cover-package=plugins --logging-filter=link
 }
 
-echo "Deactivating test environment"
-deactivate
 if [ -z "$TRAVIS" ]; then
+  echo "Deactivating test environment"
+  deactivate
   if [[ "$status" =~ "Stopping" ]];
   then
     echo "Restarting stopped neo4j instance"
