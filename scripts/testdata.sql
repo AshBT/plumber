@@ -86,6 +86,72 @@ LOCK TABLES `ads_attributes` WRITE;
 INSERT INTO `ads_attributes` VALUES (126114125,1,'phone','5555559574',1,' 5555559574','2014-07-15 21:05:35'),(126114136,1,'height','165',0,NULL,'2014-07-15 21:05:36'),(358026106,23,'username','janedoe92',0,NULL,'2014-10-27 17:25:51'),(358026109,23,'reviewsite1','http://www.foobar.com/reviews/show.asp?id=208894',0,NULL,'2014-10-27 17:25:51'),(358026117,23,'weight','115',0,NULL,'2014-10-27 17:25:51'),(358026122,23,'longitude','0',0,NULL,'2014-10-27 17:25:51'),(358026127,23,'email','janedoe@foobar.com',1,NULL,'2014-10-27 17:25:51'),(358026131,23,'build','Fail',0,NULL,'2014-10-27 17:25:51'),(358026137,23,'latitude','0',0,NULL,'2014-10-27 17:25:51'),(358026140,23,'availability','none',0,NULL,'2014-10-27 17:25:51'),(358026145,23,'ethnicity','ethnicity',1,NULL,'2014-10-27 17:25:51'),(299941033,84,'username','johndoe',0,NULL,'2014-10-22 21:29:49'),(299941052,84,'eyes','Brown',0,NULL,'2014-10-22 21:29:50'),(299941063,84,'weight','140',0,NULL,'2014-10-22 21:29:50'),(299941077,84,'cup','stanley',0,NULL,'2014-10-22 21:29:50'),(299941098,84,'bust','boom',0,NULL,'2014-10-22 21:29:50'),(299941110,84,'height','5\'6\'\'',0,NULL,'2014-10-22 21:29:50'),(299941124,84,'hair','Bald',0,NULL,'2014-10-22 21:29:50'),(299941135,84,'email','johndoe@foobar.com',1,NULL,'2014-10-22 21:29:50'),(299941150,84,'build','Success',0,NULL,'2014-10-22 21:29:50'),(299941156,84,'availability','sometimes',0,NULL,'2014-10-22 21:29:50'),(299941161,84,'ethnicity','ethnicity',1,NULL,'2014-10-22 21:29:50'),(358026133,561,'username','janedoe1776',0,NULL,'2014-10-27 17:25:51'),(358026136,561,'eyes','Brown',0,NULL,'2014-10-27 17:25:51'),(358026141,561,'longitude','0',0,NULL,'2014-10-27 17:25:51'),(358026149,561,'reviewsite1','http://www.foobar.com/site_listing/reviewed_seal.gif',0,NULL,'2014-10-27 17:25:51'),(358026152,561,'weight','165',0,NULL,'2014-10-27 17:25:51'),(358026156,561,'cup','mushroom',0,NULL,'2014-10-27 17:25:51'),(358026162,561,'waist','32',0,NULL,'2014-10-27 17:25:51'),(358026169,561,'bust','boom',0,NULL,'2014-10-27 17:25:51'),(358026176,561,'height','5\'4\'\'',0,NULL,'2014-10-27 17:25:51'),(358026181,561,'hair','Brown',0,NULL,'2014-10-27 17:25:51'),(358026194,561,'email','janedoe1776@foobar.com',1,NULL,'2014-10-27 17:25:51'),(358026203,561,'build','Error',0,NULL,'2014-10-27 17:25:51'),(358026213,561,'latitude','0',0,NULL,'2014-10-27 17:25:51'),(358026218,561,'availability','none',0,NULL,'2014-10-27 17:25:51'),(358026224,561,'hips','do not lie',0,NULL,'2014-10-27 17:25:51'),(358026231,561,'phone','5555552667',1,'       555-555-2667','2014-10-27 17:25:51'),(98116507,5823,'phone','5555557218',1,' 555-555-7218','2014-07-07 16:55:16');
 /*!40000 ALTER TABLE `ads_attributes` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `ads`
+--
+
+DROP TABLE IF EXISTS `ads`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ads` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Auto incremented row identifier, unique to table.',
+  `first_id` int(10) unsigned DEFAULT NULL COMMENT 'ID in this table of the first time this ad was seen.',
+  `sources_id` int(10) unsigned NOT NULL COMMENT 'ID of the source the ad came from.',
+  `incoming_id` int(11) unsigned NOT NULL COMMENT 'ID of the raw HTML in the incoming table.',
+  `url` varchar(2083) CHARACTER SET utf8 NOT NULL COMMENT 'Web address of posting.',
+  `title` varchar(1024) CHARACTER SET utf8mb4 NOT NULL COMMENT 'User populated title, usually from the HTML title tag.',
+  `text` mediumtext CHARACTER SET utf8mb4 COMMENT 'User populated text of post. Included in, but not the entirety of HTML body.',
+  `type` varchar(16) DEFAULT NULL COMMENT 'Type of entity advertised. Allowed values are: person, location, organization.',
+  `sid` varchar(64) DEFAULT NULL COMMENT 'Site defined identification number of ad. Not necessarily unique.',
+  `region` varchar(128) CHARACTER SET utf8 DEFAULT NULL COMMENT 'Advertising region of post. Defined per website.',
+  `city` varchar(128) CHARACTER SET utf8 DEFAULT NULL COMMENT 'City advertised in post.',
+  `state` varchar(64) CHARACTER SET utf8 DEFAULT NULL COMMENT 'Advertised state or province.',
+  `country` varchar(64) CHARACTER SET utf8 DEFAULT NULL COMMENT 'Advertised country.',
+  `phone` varchar(64) CHARACTER SET utf8 DEFAULT NULL COMMENT 'Phone number listed in post.',
+  `age` varchar(10) DEFAULT NULL COMMENT 'Age of person indicated in post.',
+  `website` varchar(2048) DEFAULT NULL COMMENT 'Website of entity advertised in post.',
+  `email` varchar(512) CHARACTER SET utf8 DEFAULT NULL COMMENT 'Email address listed in post.',
+  `gender` varchar(20) DEFAULT NULL COMMENT 'Listed gender. Suggested values are: female, male, trans.',
+  `service` varchar(16) DEFAULT NULL COMMENT 'Services offered. Example values are: Escorts, Massage, BDSM, GFE',
+  `posttime` datetime DEFAULT NULL COMMENT 'Site populated timestamp of when post was created.',
+  `scrapedtime` datetime DEFAULT NULL COMMENT 'Timestamp of when post was scraped.',
+  `importtime` timestamp NOT NULL DEFAULT 0 COMMENT 'Timestamp when post was imported into database.',
+  `modtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp of the most recent modification.',
+  `memexid` varchar(512) DEFAULT NULL COMMENT 'Hostname, url hash, milliseconds unix timestamp.',
+  PRIMARY KEY (`id`),
+  KEY `timestamp` (`importtime`),
+  KEY `First ID` (`first_id`),
+  KEY `type` (`type`(3)),
+  KEY `URL` (`url`(128)),
+  KEY `region` (`region`(5)),
+  KEY `city` (`city`(6)),
+  KEY `state` (`state`(3)),
+  KEY `country` (`country`(4)),
+  KEY `phone` (`phone`),
+  KEY `age` (`age`),
+  KEY `email` (`email`(20)),
+  KEY `service` (`service`(1)),
+  KEY `sid` (`sid`(4)),
+  KEY `incomingandsite` (`sources_id`,`incoming_id`),
+  KEY `first_idandid` (`first_id`,`id`),
+  KEY `posttimeandsites` (`posttime`,`sources_id`),
+  KEY `modtime` (`modtime`),
+  KEY `importtime` (`importtime`),
+  KEY `memexid` (`memexid`)
+) ENGINE=InnoDB AUTO_INCREMENT=59531375 DEFAULT CHARSET=ascii;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ads`
+--
+-- WHERE:  id in (1)
+
+LOCK TABLES `ads` WRITE;
+/*!40000 ALTER TABLE `ads` DISABLE KEYS */;
+INSERT INTO `ads` VALUES (1,NULL,4,2,'http://www.foobar.com/hello.html','555-555-9574 - 0nLY f00bar','WTS Thunderfury!',NULL,'5538152',NULL,'birmingham',NULL,NULL,'5555559574',NULL,NULL,NULL,NULL,NULL,'2013-11-03 00:00:00',NULL,'2014-04-03 00:55:22','2014-04-03 00:55:22',NULL);
+/*!40000 ALTER TABLE `ads` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
