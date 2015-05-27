@@ -4,6 +4,7 @@
 from plugins.enhancer import Enhancer, SQLEnhancer
 from py2neo import Node, Graph
 import requests
+import os
 from .. utils import check_equals, check_exists, check_not_exists
 
 class MyEnhancer(Enhancer):
@@ -27,8 +28,9 @@ class MySQLEnhancer(SQLEnhancer):
 class TestEnhancer(object):
     @classmethod
     def setup_class(cls):
+        db_name = os.environ.get("SQL_DB", "memex_ht")
         cls.ENHANCER = MyEnhancer()
-        cls.SQL_ENHANCER = MySQLEnhancer(db='memex_ht')
+        cls.SQL_ENHANCER = MySQLEnhancer(db=db_name)
         # seed some data
         test_nodes = [
             {"phone": ["123", "456"],
@@ -67,4 +69,4 @@ class TestEnhancer(object):
         yield check_not_exists, result, 'title'
         yield check_not_exists, result, 'website'
         # check that the phone number is correctly populated
-        yield check_equals, result['phone'], "2055419574"
+        yield check_equals, result['phone'], "5555559574"
