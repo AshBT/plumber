@@ -33,6 +33,7 @@ class Instagram(enhancer.Enhancer):
 				return instagram_user_name
 			except Exception as e:
 				log.error(e)
+		return None
 
 	def get_instagram_id(self,instagram_user_name):
 		#It seems difficult to find the id from a username using instagramAPI - figure out if this is possible later
@@ -57,7 +58,7 @@ class Instagram(enhancer.Enhancer):
 			recent_media = recent_media_request.json()
 		except:
 			return 0
-		return recent_media		
+		return recent_media
 
 	def get_likers(self,recent_media):
 		return [[x['username'],x['id'],x['full_name'],x['profile_picture']] for datum in recent_media['data'] for x in datum['likes']['data']]
@@ -90,33 +91,29 @@ class Instagram(enhancer.Enhancer):
 
 	def enhance(self, node):
 		#print('hi')
-		try:
-			ig_username = self.get_instagram_username(node)
-			
-			if ig_username is not None:
+		ig_username = self.get_instagram_username(node)
 
-				ig_id = int(self.get_instagram_id(ig_username))
-				
-				if ig_id != 0:
-					try:
-						#ig_id = 372991597
-						recent_media = self.get_recent_media(ig_id)
-						node['instagram_followers'] = ';'.join([str(f)for f in self.api.user_followed_by(str(ig_id))[0]])
-						node['instagram_follows'] = ';'.join([str(f)for f in self.api.user_follows(str(ig_id))[0]])
-						node['instagram_tags'] = self.get_all_instagram_tags(recent_media)
-						node['instagram_profile_picture'] = self.get_profile_picture(ig_id)
-						
-						node['instagram_likers'] = ','.join(flatten(self.get_likers(recent_media)))
-						node['get_media_ids_and_posttimes'] = ','.join(flatten(self.get_media_ids_and_posttimes(recent_media)))
-						node['get_commentors'] = ','.join(flatten(self.get_commentors(recent_media)))
-						
-					except Exception as e:
-						exc_type, exc_value, exc_traceback = sys.exc_info()
-						print exc_type
-						print exc_value
-						traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
+		if ig_username is not None:
 
-				
-		except:
-			exc_type, exc_value, exc_traceback = sys.exc_info()
-			traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
+			ig_id = int(self.get_instagram_id(ig_username))
+
+			if ig_id != 0:
+				try:
+					#ig_id = 372991597
+					recent_media = self.get_recent_media(ig_id)
+					node['instagram'] = ig_username
+					node['instagram_followers'] = ';'.join([str(f)for f in self.api.user_followed_by(str(ig_id))[0]])
+					node['instagram_follows'] = ';'.join([str(f)for f in self.api.user_follows(str(ig_id))[0]])
+					node['instagram_tags'] = self.get_all_instagram_tags(recent_media)
+					node['instagram_profile_picture'] = self.get_profile_picture(ig_id)
+
+					node['instagram_likers'] = ','.join(flatten(self.get_likers(recent_media)))
+					node['get_media_ids_and_posttimes'] = ','.join(flatten(self.get_media_ids_and_posttimes(recent_media)))
+					node['get_commentors'] = ','.join(flatten(self.get_commentors(recent_media)))
+
+				except Exception as e:
+					exc_type, exc_value, exc_traceback = sys.exc_info()
+					print exc_type
+					print exc_value
+					traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
+					raise e
