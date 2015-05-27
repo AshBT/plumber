@@ -37,5 +37,5 @@ class TestInstagrammer(Runner):
         super(TestInstagrammer, cls).setup_class(Instagram, _test_nodes)
 
     def test_run(self):
-        for t in super(TestInstagrammer, self).test_run(_expected_results, test_debug=True):
+        for t in super(TestInstagrammer, self).test_run(_expected_results):
             yield t
