@@ -8,7 +8,7 @@ GIT_COMMIT=$(git rev-parse HEAD)
 GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 go build -v
-pushd cmd/plumb
+cd cmd/plumb
 go build -v -ldflags "-X main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}"
-popd
+cd ../..
 mv cmd/plumb/plumb .
