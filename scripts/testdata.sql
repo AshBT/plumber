@@ -28,7 +28,7 @@ CREATE TABLE `images` (
   `ads_id` int(11) unsigned DEFAULT NULL COMMENT 'ID of the ad in the ads table that these images are from.',
   `url` varchar(2083) CHARACTER SET utf8mb4 NOT NULL COMMENT 'URL of the source image.',
   `location` varchar(128) DEFAULT NULL COMMENT 'Location of our cached copy of the image.',
-  `importtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp when image was imported into database.',
+  `importtime` timestamp NOT NULL DEFAULT 0 COMMENT 'Timestamp when image was imported into database.',
   `modtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp of the most recent modification.',
   PRIMARY KEY (`id`),
   UNIQUE KEY `url_unique` (`url`(191)),
