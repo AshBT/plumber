@@ -8,8 +8,27 @@ import requests
 import sys
 import traceback
 from compiler.ast import flatten
+from HTMLParser import HTMLParser
 
-log = logging.getLogger("link.plugins.twitter")
+log = logging.getLogger("link.plugins.instagram")
+
+# strip all HTML tags from the text (except <a href="..."></a>)
+# modified from http://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
+class HTMLStripper(HTMLParser):
+	def __init__(self):
+		self.reset()
+		self.fed = []
+
+	def handle_starttag(self, tag, attrs):
+		attrs = dict(attrs)
+		if tag == 'a' and 'href' in attrs:
+			self.fed.append(" " + attrs['href'] + " ")
+
+	def handle_data(self, d):
+		self.fed.append(d)
+
+	def get_data(self):
+		return ''.join(self.fed)
 
 class Instagram(enhancer.Enhancer):
 	def __init__(self):
@@ -21,7 +40,13 @@ class Instagram(enhancer.Enhancer):
 
 	def get_instagram_username(self,node):
 		if 'text' in node:
+
+			s = HTMLStripper()
 			text = node['text']
+			s.feed(text)
+			text = s.get_data()
+			node['escaped_text'] = text
+
 			expression = re.compile('instagram\s*:?\s*[^\s]*',re.IGNORECASE)
 			try:
 				raw = re.findall(expression,text)[0]
@@ -93,15 +118,16 @@ class Instagram(enhancer.Enhancer):
 		#print('hi')
 		ig_username = self.get_instagram_username(node)
 
-		if ig_username is not None:
-
+		# the first checks if the username is not None, the second
+		# checks if the username is "blank" (empty string)
+		if ig_username is not None and ig_username:
+			node['instagram'] = ig_username
 			ig_id = int(self.get_instagram_id(ig_username))
 
 			if ig_id != 0:
 				try:
 					#ig_id = 372991597
 					recent_media = self.get_recent_media(ig_id)
-					node['instagram'] = ig_username
 					node['instagram_followers'] = ';'.join([str(f)for f in self.api.user_followed_by(str(ig_id))[0]])
 					node['instagram_follows'] = ';'.join([str(f)for f in self.api.user_follows(str(ig_id))[0]])
 					node['instagram_tags'] = self.get_all_instagram_tags(recent_media)
@@ -110,7 +136,12 @@ class Instagram(enhancer.Enhancer):
 					node['instagram_likers'] = ','.join(flatten(self.get_likers(recent_media)))
 					node['get_media_ids_and_posttimes'] = ','.join(flatten(self.get_media_ids_and_posttimes(recent_media)))
 					node['get_commentors'] = ','.join(flatten(self.get_commentors(recent_media)))
-
+				except instagram.InstagramAPIError as e:
+					# make a note that the user exists but we aren't allowed to access info
+					if e.error_type == "APINotAllowedError":
+						node['instagram_error_message'] = str(e)
+					else:
+						raise e
 				except Exception as e:
 					exc_type, exc_value, exc_traceback = sys.exc_info()
 					print exc_type
