@@ -2,7 +2,7 @@ import cv2
 import sys
 import numpy as np
 import urllib
-import re 
+import re
 import os
 import csv
 from . import enhancer
@@ -24,9 +24,9 @@ class FaceFinder (enhancer.Enhancer):
 
 		S3_ACCESS_KEY=os.environ['S3_ACCESS_KEY']
 		S3_SECRET_KEY=os.environ['S3_SECRET_KEY']
-		self.conn = tinys3.Connection(S3_ACCESS_KEY, 
-			S3_SECRET_KEY, 
-			tls=True, 
+		self.conn = tinys3.Connection(S3_ACCESS_KEY,
+			S3_SECRET_KEY,
+			tls=True,
 			endpoint='s3-us-west-1.amazonaws.com')
 
 	def load_image(self,imagePath):
@@ -58,6 +58,7 @@ class FaceFinder (enhancer.Enhancer):
 			f = open(self.directory + "/Plugins/Images/" + filepath + ".png",'rb')
 			self.conn.upload(filepath + ".png",f,bucketname)
 		return 'https://s3-us-west-1.amazonaws.com/' + bucketname + "/" + filepath + ".png"
+		
 	def enhance(self, node):
 		if 'image_locations' in node:
 			n_faces=0
@@ -65,6 +66,8 @@ class FaceFinder (enhancer.Enhancer):
 			bucket_contents=self.conn.list("","memexadvertisements") #Get S3 bucket contents to avoid re-uploading images already in the database
 			for files in bucket_contents:
 				uploaded_urls.append(files["key"])
+
+			node["face_image_url"] = []
 			for identity in node['image_locations']:
 				filepath=re.sub("httpss3amazonawscomroxyimages","",re.sub("[\W_]+","",str(identity))) + ".png"
 				try:
@@ -74,14 +77,13 @@ class FaceFinder (enhancer.Enhancer):
 						n_faces=n_faces+1
 						if filepath not in uploaded_urls:
 							face_url=self.crop_face(image,faces,"memexadvertisements", identity)
-							node["face_image_url"]= face_url
+							node["face_image_url"].append( face_url )
 							print "Loaded New Face to S3"
 						else:
-							node["face_image_url"]='https://s3-us-west-1.amazonaws.com/memexadvertisements/' + filepath
-				except:
+							node["face_image_url"].append( 'https://s3-us-west-1.amazonaws.com/memexadvertisements/' + filepath )
+				except Exception as e:
 					exc_type, exc_value, exc_traceback = sys.exc_info()
 					traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
-				
-			node["n_faces"]=n_faces 
+					raise e
 
-	
+			node["n_faces"]=n_faces
