@@ -32,10 +32,14 @@ if [ -z "$TRAVIS" ]; then
   virtualenv --system-site-packages test-env
   source test-env/bin/activate
 fi
+
+pip install nose coverage
+
+# we consider this "group" as a test. it has to successfully install deps
+# and run all unit tests
 {
-  pip install nose coverage && \
   pip install -r requirements.txt && \
-  NEO_PASS=password python `which nosetests` --with-coverage --cover-package=plugins --logging-filter=link
+  NEO_PASS=password python `which nosetests` -d --with-coverage --cover-package=plugins --logging-filter=link
 }
 
 if [ -z "$TRAVIS" ]; then
