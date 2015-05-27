@@ -16,22 +16,22 @@ _test_nodes = [
 _expected_results = [
     {"height":["165"],
      "id":1,
-     "phone":["1234", "2055419574"]},
-    {"availability":["Outcall"],
-     "build":["Curvy"],
-     "bust":["36"],
-     "cup":["C"],
-     "email":["mimi.adora@yahoo.com"],
-     "ethnicity":["asian"],
+     "phone":["1234", "5555559574"]},
+    {"availability":["sometimes"],
+     "build":["Success"],
+     "bust":["boom"],
+     "cup":["stanley"],
+     "email":["johndoe@foobar.com"],
+     "ethnicity":["ethnicity"],
      "eyes":["Brown"],
-     "hair":["Blonde"],
+     "hair":["Bald"],
      "height":["5'6''"],
      "id":"84",
-     "username":["mimiadora"],
+     "username":["johndoe"],
      "weight":["140"],
      "phone": 4567},
     {"id":5823,
-     "phone":["9413027218"]}
+     "phone":["5555557218"]}
 ]
 
 class TestAttributer(Runner):
