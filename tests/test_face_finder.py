@@ -1,4 +1,4 @@
-from plugins.face_finder import face_finder
+from plugins.face_finder import FaceFinder
 from . utils import Runner
 
 # This is a test on two separate nodes.
@@ -14,11 +14,11 @@ _expected_results = [
 {"n_faces":0}
 ]
 
-class Test_face_finder(Runner):
+class TestFaceFinder(Runner):
     @classmethod
     def setup_class(cls):
-        super(Test_face_finder, cls).setup_class(face_finder, _test_nodes)
+        super(TestFaceFinder, cls).setup_class(FaceFinder, _test_nodes)
 
     def test_run(self):
-        for t in super(Test_face_finder, self).test_run(_expected_results):
+        for t in super(TestFaceFinder, self).test_run(_expected_results):
             yield t
