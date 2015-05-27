@@ -1,12 +1,14 @@
 from . import enhancer
 import collections
 import logging
+import os
 
 log = logging.getLogger("link.plugins.imager")
 
 class Imager(enhancer.SQLEnhancer):
     def __init__(self):
-        super(Imager, self).__init__(db='memex_ht')
+        db_name = os.environ.get("SQL_DB", "memex_ht")
+        super(Imager, self).__init__(db=db_name)
 
     def enhance(self, node):
         # this makes a db query for each node

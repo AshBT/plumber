@@ -7,7 +7,8 @@ log = logging.getLogger("link.plugins.attributer")
 
 class Attributer(enhancer.SQLEnhancer):
     def __init__(self):
-        super(Attributer, self).__init__(db='memex_ht')
+        db_name = os.environ.get("SQL_DB", "memex_ht")
+        super(Attributer, self).__init__(db=db_name)
 
     def enhance(self, node):
         # this makes a db query for each node

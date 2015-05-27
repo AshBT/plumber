@@ -1,6 +1,7 @@
 import py2neo
 from . import enhancer
 
+import os
 import time
 import random
 import logging
@@ -15,7 +16,8 @@ def listify(x):
 
 class ImageLinker(enhancer.SQLEnhancer):
     def __init__(self):
-        super(ImageLinker, self).__init__(db='memex_ht')
+        db_name = os.environ.get("SQL_DB", "memex_ht")
+        super(ImageLinker, self).__init__(db=db_name)
         # this cypher statement looks up all entities associated with
         # the current node and adds a relationship for each image in
         # the node to those entities
