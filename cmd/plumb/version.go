@@ -1,6 +1,6 @@
 package main
 
-// The git commit that was used to build omakase. Compiler fills it in
+// The git commit that was used to build plumb. Compiler fills it in
 // with -ldflags
 var GitCommit string
 
