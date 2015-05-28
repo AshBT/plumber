@@ -22,7 +22,7 @@ class TestInstagrammer(Runner):
         {"text": "Follow me on INSTAGRAM: http://instagram.com/VIPVeronica<br />",
             "escaped_text": "Follow me on INSTAGRAM: http://instagram.com/VIPVeronica",
             'instagram': 'VIPVeronica',
-            'instagram_profile_picture': 'https://igcdn-photos-a-a.akamaihd.net/hphotos-ak-xpf1/t51.2885-19/11084657_387545114783112_1103517643_a.jpg',
+            'instagram_profile_picture': '',
             "instagram_followers": "",
             "instagram_follows": "",
             "instagram_tags": "",
@@ -52,7 +52,7 @@ class TestInstagrammer(Runner):
             Still think I'm too beautiful to be real?? <a target="_blank" href="http://www.instagram.com/QUEENOSIRIS"> PICS AND PROOF VIDEO</a>'''),
             "escaped_text": "CARTY 7083208795 OR PROOF VIDEO on Insta.gram as QUEENOSIRIS\n            \n            Still think I'm too beautiful to be real??  http://www.instagram.com/QUEENOSIRIS  PICS AND PROOF VIDEO",
             "instagram": "QUEENOSIRIS",
-            'instagram_profile_picture': 'https://instagramimages-a.akamaihd.net/profiles/profile_308829295_75sq_1387802497.jpg',
+            'instagram_profile_picture': '',
             "instagram_followers": "",
             "instagram_follows": "",
             "instagram_tags": "",
@@ -62,4 +62,4 @@ class TestInstagrammer(Runner):
         {"text": "I don't actually have an instagram username.",
          "escaped_text": "I don't actually have an instagram username."}
     ]
-    IGNORE = set(["instagram_followers", "instagram_follows", "instagram_tags", "instagram_likers", "get_media_ids_and_posttimes", "get_commentors"])
+    IGNORE = set(["instagram_profile_picture", "instagram_followers", "instagram_follows", "instagram_tags", "instagram_likers", "get_media_ids_and_posttimes", "get_commentors"])
