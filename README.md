@@ -1,13 +1,16 @@
-# Link plumber
+# Plumb
 The `plumb` tool is designed to facilitate knowledge discovery through the deployment of data enhancers and linkers for the express purpose of exploring data and (informally) testing hypotheses.
 
-Data processing tasks for ETL or data science typically involve data cleaning, data munging, or just adding new fields to a pre-set schema. Often, the trick is corralling raw data into a form usable by algorithms that typically operate on floating point numbers or categorical data.
+Data processing tasks for ETL or data science typically involve data cleaning, data munging, or just adding new fields to a pre-set schema. Often, the trick is corralling raw data from a variety of sources into a form usable by algorithms that typically operate on floating point numbers or categorical data.
 
-We envision this process being done by a series of operations or transformations on raw data: we term these *enhancers*. Each enhancer can be as simple (e.g., a regex match) or as complex (e.g., a database lookup) as necessary to provide additional data.
+This process can be thought of as a series of operations or transformations on raw data: we term these *enhancers*. Each enhancer can be as simple (e.g., a regex match) or as complex (e.g., a database lookup) as necessary to provide additional data. The only requirement for enhancers is that they take a map in and provide a map out.
 
 Furthermore, we provide some higher-level capabilities by allowing developers to deploy nodes that link related data together: we call these nodes *linkers*.
 
-Finally, by decoupling the transformations on each piece of data, we can also programmatically test and document enhancers and linkers. This gives end-users a high-level of assurance that their data processing pipeline is correct, preventing garbage in and garbage out.
+Based on information provided in a `.plumb.yml` file, the `plumb` tool can compose a set of enhancers or linkers such that their dependencies are satisfied and deploy the data processing pipeline to a (properly configured?) CoreOS cluster.
+
+## Installation
+Download binaries.
 
 ## Enhancers and linkers
 
@@ -17,45 +20,43 @@ The `plumb` tool will take care of creating the necessary wrappers to enable use
 
 An "enhancer" is defined as a compute node that takes some JSON in, adds information to it, and returns it as more JSON. A linker.... TBD.
 
-## Installation
-Download binaries.
+## Testing
+By decoupling the transformations on each piece of data, we can also programmatically test and document enhancers and linkers. This gives end-users a high level of assurance that their data processing pipeline is correct, preventing garbage in and garbage out.
 
-## Infrastructure
+## Infrastructure (TODO)
 While `plumb` can run on a single machine, it is best run on a cluster hosted on AWS or GCE. We are planning support for Kubernetes and CoreOS. For now, use the included Terraform file for bootstrapping.
 
 # Examples
 
-### Data sources
+## Data sources (TODO)
 A data source, such as a database or the Twitter firehose, is an enhancer with no upstream dependencies. You can see an example of a data source via
 
-    git clone github.com/qadium/plumb-twitter
-    cd plumb-twitter && plumb bundle .
+    git clone github.com/qadium/plumb-csv
+    cd plumb-csv && plumb bundle .
 
-You'll need to add your own Twitter credentials in the `.plumb.yml` file before running `plumb bundle`. You can start the source with `docker run plumb/twitter`. Note that this subscribes to the Twitter feed, but does not do anything with it.
+You can start the source with `docker run plumb/csv`. Note that this rotates through the included CSV file, but does not do anything with it.
 
-### Data sinks
+## Data sinks (TODO)
 A data sink, such as a database writer or a GUI display, is an enhancer with no downstream dependencies. You can see an example of a data sink via
 
-  git clone github.com/qadium/plumb-events
-  cd plumb-events && plumb bundle .
+  git clone github.com/qadium/plumb-count
+  cd plumb-count && plumb bundle .
 
-You can start the sink with `docker run -p 8000:8000 -p 9100:9100 plumb/events`. If you point your browser to `localhost:8000`, you'll see a moving timeline with heights corresponding to requests per minute.
+You can start the sink with `docker run -p 8000:8000 -p 9800:9800 plumb/count`. If you point your browser to `localhost:8000`, you'll see a moving timeline with heights corresponding to requests per minute.
 
-You can `curl localhost:9100 -d '{}' -H 'Content-Type: applicatoin/json'` to see an event recorded. Note that sinks receive *any* input, since the idea is to uniformly handle all messages that arrive at the destination. Plumb does not support multiple heterogenous sinks at the moment; you can, however, write the same data to multiple databases if you'd like.
+You can `curl localhost:9800 -d '{}' -H 'Content-Type: application/json'` to see an event recorded. Note that sinks receive *any* input, since the idea is to uniformly handle all messages that arrive at the destination. Plumb does not support multiple heterogenous sinks at the moment; you can, however, write the same data to multiple databases if you'd like.
 
-### Data enrichers
-To add an enhancer that adds twitter data to a pipeline that produces JSON with a `twitter` key, first
+## Data enrichers
+To add an enhancer that adds a `hello` text to a JSON containing the `name` field, first
 
-    git clone github.com/qadium/twitter-linker
-    cd twitter-linker && plumb bundle .
+    git clone github.com/qadium/plumb-hello
+    cd plumb-hello && plumb bundle .
 
-This will package the source code in the twitter-linker into a Docker container which you can run locally with `docker run twitter-linker`.
+This will package the source code into a Docker container which you can run locally with `docker run plumb/hello -p 9800`.
 
-You can then `curl localhost:8000 -d '{"twitter": "qadium"}' -H 'Content-Type: application/json'` and receive the output from the twitter linker.
+You can then `curl localhost:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` and receive the output from the greeter.
 
-This will additionally run any unit tests you have specified in the YAML file as well.
-
-To schedule it into a production pipeline, run `plumb create foobar` and `plumb submit foobar .`. To run the pipeline, run `plumb start foobar`.
+(TODO) This will additionally run any unit tests you have specified in the YAML file as well.
 
 ## Put it all together
 Let's put the source, the sink, and the enhancers together into a data pipeline.
@@ -75,16 +76,19 @@ The `plumb start` command will query the bucket for all its key vals and constru
 ## Storm
 Storm topologies... very similar, not as dynamic. Not container based. Performance?
 
+## Docker compose aka Fig
+For more generic services; explicit linking. Full control of docker containers.
+
 ## Others?
 I don't know of any others.
 
 # Roadmap
 *v0.1.0*
 
-- `plumb bundle` functionality for Python
-- `plumb submit` to a local `plumbd` instance
+- (✓) `plumb bundle` functionality for Python
+- ~~`plumb submit` to a local `plumbd` instance~~
 - `plumb start` on local docker instances
-- `plumbd` as nothing more than docker wrapper
+- ~~`plumbd` as nothing more than docker wrapper~~
 - unit tests
 - bintray deploy?
 
