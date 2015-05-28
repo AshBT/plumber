@@ -71,6 +71,9 @@ class FaceFinder (enhancer.Enhancer):
 		return faces
 
 	def crop_face(self,image,faces,bucketname, image_location):
+		""" This uploads multiple files, but it only returns the path
+			for the last one.
+		"""
 		for (x, y, w, h) in faces:
 			crop_img = image[y:y+h, x:x+w]
 			filepath = get_filepath(image_location)
@@ -101,5 +104,4 @@ class FaceFinder (enhancer.Enhancer):
 					exc_type, exc_value, exc_traceback = sys.exc_info()
 					traceback.print_tb(exc_traceback, limit=10, file=sys.stdout)
 					log.error(e)
-
 			node["n_faces"]=n_faces
