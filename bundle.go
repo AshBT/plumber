@@ -1,15 +1,13 @@
 package plumb
 
 import (
-	"bufio"
 	"fmt"
 	"gopkg.in/yaml.v2"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"text/template"
+	"github.com/qadium/plumb/shell"
 )
 
 type templateContext struct {
@@ -172,37 +170,10 @@ func Bundle(path string) error {
 
 	log.Printf(" |  Building container.")
 	imageName := fmt.Sprintf("plumb/%s", ctx.Name)
-	cmd := exec.Command("docker", "build", "-t", imageName, "-f", dockerfile.Name(), path)
-
-	stdout, err := cmd.StdoutPipe()
+	err = shell.RunAndLog("docker", "build", "-t", imageName, "-f", dockerfile.Name(), path)
 	if err != nil {
 		return err
 	}
-
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
-	multi := io.MultiReader(stdout, stderr)
-	in := bufio.NewScanner(multi)
-
-	for in.Scan() {
-		log.Printf("    %s", in.Text())
-	}
-	if err := in.Err(); err != nil {
-		log.Printf("    error: %s", err)
-	}
-
-	err = cmd.Wait()
-	if err != nil {
-		return err
-	}
-
 	log.Printf("    Container 'plumb/%s' built.", ctx.Name)
 	return nil
 }
