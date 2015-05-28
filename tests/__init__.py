@@ -6,6 +6,7 @@ import tarfile
 import os
 import subprocess
 import requests
+import warnings
 
 __TEMP_DIR = tempfile.mkdtemp()
 __NEO4J_TEST_DIRECTORY = os.getenv('NEO4J_TEST_DIRECTORY')
@@ -25,8 +26,11 @@ def setup_package():
     # change the password the first time
     payload = {"password": "password"}
     r = requests.post("http://localhost:7474/user/neo4j/password", auth=("neo4j", "neo4j"), data=payload)
+    # ignore all warnings
+    warnings.simplefilter("ignore")
 
 def teardown_package():
     subprocess.check_output(["%s/neo4j/bin/neo4j" % __TEMP_DIR, "stop"])
     print "Removing temp directory"
     shutil.rmtree(__TEMP_DIR)
+    warnings.resetwarnings()
