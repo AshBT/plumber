@@ -13,14 +13,16 @@ import sys
 import traceback
 import tinys3
 
-log = logging.getLogger("link.plugins.FaceFinder")
+log = logging.getLogger("link.plugins.face_finder")
 
 class FaceFinder (enhancer.Enhancer):
 	def __init__(self):
 		super(FaceFinder, self).__init__()
 		self.directory=os.getcwd()
 		self.cascPath = os.getcwd() + "/plugins" + "/haarcascade_frontalface_default.xml"
+		log.info("Haar cascade path: '{}'".format(self.cascPath))
 		self.faceCascade = cv2.CascadeClassifier(self.cascPath)
+		log.info("Cascade classifier loaded")
 
 		S3_ACCESS_KEY=os.environ['S3_ACCESS_KEY']
 		S3_SECRET_KEY=os.environ['S3_SECRET_KEY']
@@ -46,11 +48,7 @@ class FaceFinder (enhancer.Enhancer):
 			)
 		return faces
 
-	def count_faces(self,faces):
-		return len(faces)
-
 	def crop_face(self,image,faces,bucketname, image_location):
-		i=1
 		for (x, y, w, h) in faces:
 			crop_img = image[y:y+h, x:x+w]
 			filepath=re.sub("httpss3amazonawscomroxyimages","",re.sub("[\W_]+","",str(image_location)))
@@ -58,7 +56,7 @@ class FaceFinder (enhancer.Enhancer):
 			f = open(self.directory + "/Plugins/Images/" + filepath + ".png",'rb')
 			self.conn.upload(filepath + ".png",f,bucketname)
 		return 'https://s3-us-west-1.amazonaws.com/' + bucketname + "/" + filepath + ".png"
-		
+
 	def enhance(self, node):
 		if 'image_locations' in node:
 			n_faces=0
@@ -73,8 +71,8 @@ class FaceFinder (enhancer.Enhancer):
 				try:
 					image=self.load_image(identity)
 					faces=self.find_faces(image)
-					if self.count_faces(faces)>0:
-						n_faces=n_faces+1
+					if len(faces) > 0:
+						n_faces = n_faces+1
 						if filepath not in uploaded_urls:
 							face_url=self.crop_face(image,faces,"memexadvertisements", identity)
 							node["face_image_url"].append( face_url )
