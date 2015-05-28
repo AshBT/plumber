@@ -11,8 +11,8 @@ class TestFaceFinder(Runner):
 
     OUTPUT = [
     {"face_image_url": [
-        "https://s3-us-west-1.amazonaws.com/memexadvertisements/53df35c33b244eba6a4a4e9c28e45fbe7d8afd31jpg.png",
-        "https://s3-us-west-1.amazonaws.com/memexadvertisements/795fd1d9bd22e30dc9d31c9379e859c19ef9fb27jpg.png"],
+        "https://s3-us-west-1.amazonaws.com/memexadvertisements/53df35c33b244eba6a4a4e9c28e45fbe7d8afd31.png",
+        "https://s3-us-west-1.amazonaws.com/memexadvertisements/795fd1d9bd22e30dc9d31c9379e859c19ef9fb27.png"],
         "n_faces":2,
         "image_locations": ['https://s3.amazonaws.com/roxyimages/795fd1d9bd22e30dc9d31c9379e859c19ef9fb27.jpg', 'https://s3.amazonaws.com/roxyimages/53df35c33b244eba6a4a4e9c28e45fbe7d8afd31.jpg', 'https://s3.amazonaws.com/roxyimages/aa6bc06dd3667edd4d3b9a9818ceb51ca209448a.jpg'],
     },
