@@ -1,4 +1,4 @@
-# Plumb [![Build Status](https://travis-ci.org/qadium/plumb.svg)](https://travis-ci.org/qadium/plumb)
+# Plumb [![Build Status](https://travis-ci.org/qadium/plumb.svg)](https://travis-ci.org/qadium/plumb) [![Coverage Status](https://coveralls.io/repos/qadium/plumb/badge.svg)](https://coveralls.io/r/qadium/plumb)
 This is the script used to populate our Neo4j backend database.
 
 ## Requirements
