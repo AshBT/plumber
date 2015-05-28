@@ -23,12 +23,21 @@ const bundleConfig = ".plumb.yml"
 // a standalone file in the future, so we can add different language
 // types.
 const dockerfileTemplate = `
-FROM python:2-onbuild
+FROM python:2.7.10-slim
+
+RUN mkdir -p /usr/src/bundle
+WORKDIR /usr/src/bundle
+
+COPY . /usr/src/bundle
+{{ if .Plumb.Install }}
 {{ range .Plumb.Install }}
 RUN {{ . }}
 {{ end }}
+{{ else }}
+RUN pip install -r requirements.txt
+{{ end }}
 RUN pip install bottle
-EXPOSE 9456
+EXPOSE 9800
 {{ range .Plumb.Env }}
 ENV {{ . }}
 {{ end }}
@@ -62,6 +71,9 @@ def index():
             body = "No JSON data received; did you forget to set 'Content-Type: application/json'?",
             status = 400
         )
+
+	# Instead of throwing errors when required fields are missing,
+	# maybe we just return the payload instead and add a note?
     {{ range .Plumb.Inputs }}
     if not '{{ .Name }}' in data:
         raise HTTPResponse(
@@ -81,9 +93,14 @@ def index():
         )
     {{ end }}
 
+	# Instead of assuming the output contains a superset of the input
+	# fields, we can add the input fields to the output here? It's a
+	# performance hit, but it means the output is *always* a superset
+	# of the input.
+
     return output
 
-run(host='0.0.0.0', port=9456)
+run(host='0.0.0.0', port=9800)
 `
 
 func removeTempFile(f *os.File) {
