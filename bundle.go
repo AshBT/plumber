@@ -1,20 +1,20 @@
 package plumb
 
 import (
-  "log"
-  "io/ioutil"
-  "fmt"
-  "gopkg.in/yaml.v2"
-  "os"
-  "text/template"
-  "os/exec"
-  "bufio"
-  "io"
+	"bufio"
+	"fmt"
+	"gopkg.in/yaml.v2"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"text/template"
 )
 
 type templateContext struct {
-  Wrapper string
-  Plumb *PlumbContext
+	Wrapper string
+	Plumb   *PlumbContext
 }
 
 const bundleConfig = ".plumb.yml"
@@ -87,105 +87,105 @@ run(host='0.0.0.0', port=9456)
 `
 
 func removeTempFile(f *os.File) {
-  filename := f.Name()
-  log.Printf(" |  Removing '%s'", filename)
-  err := os.RemoveAll(filename)
-  if err != nil {
-    log.Printf("    %v", err)
-  } else {
-    log.Printf("    Removed.")
-  }
+	filename := f.Name()
+	log.Printf(" |  Removing '%s'", filename)
+	err := os.RemoveAll(filename)
+	if err != nil {
+		log.Printf("    %v", err)
+	} else {
+		log.Printf("    Removed.")
+	}
 }
 
 func Bundle(path string) error {
-  ctx := PlumbContext{}
-  log.Printf("==> Creating bundle from '%s'", path)
-  defer log.Printf("<== Bundling complete.")
+	ctx := PlumbContext{}
+	log.Printf("==> Creating bundle from '%s'", path)
+	defer log.Printf("<== Bundling complete.")
 
-  log.Printf(" |  Parsing bundle config.")
-  bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, bundleConfig))
-  if err != nil {
-    return err
-  }
-  if err := yaml.Unmarshal(bytes, &ctx); err != nil {
-    return err
-  }
-  log.Printf("    %v", ctx)
+	log.Printf(" |  Parsing bundle config.")
+	bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, bundleConfig))
+	if err != nil {
+		return err
+	}
+	if err := yaml.Unmarshal(bytes, &ctx); err != nil {
+		return err
+	}
+	log.Printf("    %v", ctx)
 
-  log.Printf(" |  Making temp file for python wrapper")
-  wrapper, err := ioutil.TempFile(path, "plumb")
-  defer removeTempFile(wrapper)
-  if err != nil {
-    return err
-  }
-  log.Printf("    Created '%s'", wrapper.Name())
+	log.Printf(" |  Making temp file for python wrapper")
+	wrapper, err := ioutil.TempFile(path, "plumb")
+	defer removeTempFile(wrapper)
+	if err != nil {
+		return err
+	}
+	log.Printf("    Created '%s'", wrapper.Name())
 
-  templateCtx := templateContext{
-    Wrapper: wrapper.Name(),
-    Plumb: &ctx,
-  }
+	templateCtx := templateContext{
+		Wrapper: wrapper.Name(),
+		Plumb:   &ctx,
+	}
 
-  log.Printf(" |  Writing wrapper.")
-  tmpl, err := template.New("wrapper").Parse(wrapperTemplate)
-  if err != nil {
-    return err
-  }
-  if err := tmpl.Execute(wrapper, templateCtx); err != nil {
-    return err
-  }
-  log.Printf("    Done.")
+	log.Printf(" |  Writing wrapper.")
+	tmpl, err := template.New("wrapper").Parse(wrapperTemplate)
+	if err != nil {
+		return err
+	}
+	if err := tmpl.Execute(wrapper, templateCtx); err != nil {
+		return err
+	}
+	log.Printf("    Done.")
 
-  log.Printf(" |  Making temp file for Dockerfile")
-  dockerfile, err := ioutil.TempFile(path, "plumb")
-  defer removeTempFile(dockerfile)
-  if err != nil {
-    return err
-  }
-  log.Printf("    Created '%s'", dockerfile.Name())
+	log.Printf(" |  Making temp file for Dockerfile")
+	dockerfile, err := ioutil.TempFile(path, "plumb")
+	defer removeTempFile(dockerfile)
+	if err != nil {
+		return err
+	}
+	log.Printf("    Created '%s'", dockerfile.Name())
 
-  log.Printf(" |  Writing Dockerfile.")
-  tmpl, err = template.New("dockerfile").Parse(dockerfileTemplate)
-  if err != nil {
-    return err
-  }
-  if err := tmpl.Execute(dockerfile, templateCtx); err != nil {
-    return err
-  }
-  log.Printf("    Done.")
+	log.Printf(" |  Writing Dockerfile.")
+	tmpl, err = template.New("dockerfile").Parse(dockerfileTemplate)
+	if err != nil {
+		return err
+	}
+	if err := tmpl.Execute(dockerfile, templateCtx); err != nil {
+		return err
+	}
+	log.Printf("    Done.")
 
-  log.Printf(" |  Building container.")
-  imageName := fmt.Sprintf("plumb/%s", ctx.Name)
-  cmd := exec.Command("docker", "build", "-t", imageName, "-f", dockerfile.Name(), path)
+	log.Printf(" |  Building container.")
+	imageName := fmt.Sprintf("plumb/%s", ctx.Name)
+	cmd := exec.Command("docker", "build", "-t", imageName, "-f", dockerfile.Name(), path)
 
-  stdout, err := cmd.StdoutPipe()
-  if err != nil {
-    return err
-  }
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
 
-  stderr, err := cmd.StderrPipe()
-  if err != nil {
-    return err
-  }
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
 
-  if err := cmd.Start(); err != nil {
-    return err
-  }
+	if err := cmd.Start(); err != nil {
+		return err
+	}
 
-  multi := io.MultiReader(stdout, stderr)
-  in := bufio.NewScanner(multi)
+	multi := io.MultiReader(stdout, stderr)
+	in := bufio.NewScanner(multi)
 
-  for in.Scan() {
-    log.Printf("    %s", in.Text())
-  }
-  if err := in.Err(); err != nil {
-    log.Printf("    error: %s", err)
-  }
+	for in.Scan() {
+		log.Printf("    %s", in.Text())
+	}
+	if err := in.Err(); err != nil {
+		log.Printf("    error: %s", err)
+	}
 
-  err = cmd.Wait()
-  if err != nil {
-    return err
-  }
+	err = cmd.Wait()
+	if err != nil {
+		return err
+	}
 
-  log.Printf("    Container 'plumb/%s' built.", ctx.Name)
-  return nil
+	log.Printf("    Container 'plumb/%s' built.", ctx.Name)
+	return nil
 }
