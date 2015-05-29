@@ -117,3 +117,5 @@ Sharing within an organization can happen via private git servers and private do
 One possibility is to host bundles on Github and "search" over that. The images are then "built" and stored on private registries; so we don't have any public images--although it's not hard to have public images.
 
 One final thought about "sharing"--let's punt for now. We know it can be done via github, but let's build the core functionality. Let's `bundle` enhancers, `create` pipelines, `submit` bundles to a pipeline, and then `start` something. All in a Vagrant CoreOS cluster.
+
+The `start` command will compute the dependency graph, build a "coordinator" container, and handle requests. So you can curl the coordinator container (say, at "coordinator.foo.org"), and it will return "coordinator.foo.org/1" for the first piece of data you sent. Navigating to the URL will "spin" until the coordinator receives data. It will (at some point) use an LRU cache. But it will evict data that it cannot hold in memory. If you try to access evicted data, mmm... it will return 404.
