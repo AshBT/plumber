@@ -2,7 +2,6 @@ package plumb
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,8 +13,6 @@ type templateContext struct {
 	Wrapper string
 	Plumb   *PlumbContext
 }
-
-const bundleConfig = ".plumb.yml"
 
 // A Dockerfile template for python bundles. We'll make sure this is
 // a standalone file in the future, so we can add different language
@@ -113,16 +110,12 @@ func removeTempFile(f *os.File) {
 }
 
 func Bundle(path string) error {
-	ctx := PlumbContext{}
 	log.Printf("==> Creating bundle from '%s'", path)
 	defer log.Printf("<== Bundling complete.")
 
 	log.Printf(" |  Parsing bundle config.")
-	bytes, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, bundleConfig))
+	ctx, err := parseConfig(path)
 	if err != nil {
-		return err
-	}
-	if err := yaml.Unmarshal(bytes, &ctx); err != nil {
 		return err
 	}
 	log.Printf("    %v", ctx)
@@ -137,7 +130,7 @@ func Bundle(path string) error {
 
 	templateCtx := templateContext{
 		Wrapper: wrapper.Name(),
-		Plumb:   &ctx,
+		Plumb:   ctx,
 	}
 
 	log.Printf(" |  Writing wrapper.")
