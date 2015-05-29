@@ -8,13 +8,25 @@ import (
 	"os"
 )
 
-func createRequiredArgCheck(num int, message string) func(c *cli.Context) error {
+func createRequiredArgCheck(check func(args cli.Args) bool, message string) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		if len(c.Args()) != num {
+		if !check(c.Args()) {
 			fmt.Println(message)
 			return errors.New(message)
 		}
 		return nil
+	}
+}
+
+func exactly(num int) func(args cli.Args) bool {
+	return func(args cli.Args) bool {
+		return len(args) == num
+	}
+}
+
+func atLeast(num int) func(args cli.Args) bool {
+	return func(args cli.Args) bool {
+		return len(args) >= num
 	}
 }
 
@@ -36,7 +48,7 @@ func main() {
 		{
 			Name:   "create",
 			Usage:  "create a pipeline managed by plumb",
-			Before: createRequiredArgCheck(1, "Please provide a pipeline name."),
+			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
 				path := c.Args().First()
 				if err := plumb.Create(path); err != nil {
@@ -45,19 +57,21 @@ func main() {
 			},
 		},
 		{
-			Name:   "submit",
-			Usage:  "submit a plumb created bundle to a pipeline",
-			Before: createRequiredArgCheck(2, "Please provide both a pipeline name and a bundle path."),
+			Name:   "add",
+			Usage:  "add a plumb-enabled bundle to a pipeline",
+			Before: createRequiredArgCheck(atLeast(2), "Please provide both a pipeline name and a bundle path."),
 			Action: func(c *cli.Context) {
-				name := c.Args()[0]
-				pipeline := c.Args()[1]
-				fmt.Println("SUBMIT", name, pipeline)
+				pipeline := c.Args()[0]
+				bundles := c.Args()[1:]
+				if err := plumb.Add(pipeline, bundles...); err != nil {
+					panic(err)
+				}
 			},
 		},
 		{
 			Name:   "start",
 			Usage:  "start a pipeline managed by plumb",
-			Before: createRequiredArgCheck(1, "Please provide a pipeline name."),
+			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
 				name := c.Args().First()
 				fmt.Println("START", name)
@@ -66,7 +80,7 @@ func main() {
 		{
 			Name:   "bundle",
 			Usage:  "bundle a node for use in a pipeline managed by plumb",
-			Before: createRequiredArgCheck(1, "Please provide a bundle path."),
+			Before: createRequiredArgCheck(exactly(1), "Please provide a bundle path."),
 			Action: func(c *cli.Context) {
 				path := c.Args().First()
 				if err := plumb.Bundle(path); err != nil {
