@@ -8,6 +8,16 @@ import (
 	"github.com/qadium/plumb/shell"
 )
 
+// (TODO) break out into separate file?
+func pipelinePath(name string) (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	path := fmt.Sprintf("%s/.plumb/%s", usr.HomeDir, name)
+	return path, nil
+}
+
 func Create(name string) error {
 	// creates a pipeline by initializing a git repo at ~/.plumb/<NAME>
 	log.Printf("==> Creating '%s' pipeline", name)
@@ -15,11 +25,11 @@ func Create(name string) error {
 
 
 	log.Printf(" |  Making directory")
-	usr, err := user.Current()
+	path, err := pipelinePath(name)
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("%s/.plumb/%s", usr.HomeDir, name)
+
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return err
 	}
@@ -28,18 +38,6 @@ func Create(name string) error {
 	log.Printf(" |  Initializing pipeline with git")
 	shell.RunAndLog("git", "init", path)
 	log.Printf("    Done.")
-	// log.Printf("    Created '%s'", wrapper.Name())
-	//
-	// log.Printf(" |  Writing wrapper.")
-	// log.Printf("    Done.")
-	//
-	// log.Printf(" |  Making temp file for Dockerfile")
-	// log.Printf("    Created '%s'", dockerfile.Name())
-	//
-	// log.Printf(" |  Writing Dockerfile.")
-	// log.Printf("    Done.")
-	//
-	// log.Printf(" |  Building container.")
-	// log.Printf("    Container 'plumb/%s' built.", ctx.Name)
+
 	return nil
 }
