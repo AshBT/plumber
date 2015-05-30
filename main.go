@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/qadium/plumb"
+	plumb "github.com/qadium/plumb/cli"
 	"os"
 )
 
@@ -36,14 +36,14 @@ func main() {
 	app.Name = "plumb"
 	app.Usage = "a command line tool for managing information discovery"
 	app.Version = versionString
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:   "server, s",
-			Value:  "/var/run/plumb.sock",
-			Usage:  "location of plumb server socket",
-			EnvVar: "LINK_SERVER",
-		},
-	}
+	// app.Flags = []cli.Flag{
+	// 	cli.StringFlag{
+	// 		Name:   "server, s",
+	// 		Value:  "/var/run/plumb.sock",
+	// 		Usage:  "location of plumb server socket",
+	// 		EnvVar: "LINK_SERVER",
+	// 	},
+	// }
 	app.Commands = []cli.Command{
 		{
 			Name:   "create",

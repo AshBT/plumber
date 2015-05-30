@@ -1,4 +1,4 @@
-package plumb
+package cli
 
 import (
 	"io/ioutil"
