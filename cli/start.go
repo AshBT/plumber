@@ -8,7 +8,9 @@ import (
 	"text/template"
 	"path/filepath"
 	"github.com/qadium/plumb/graph"
+	"github.com/qadium/plumb/shell"
 	"os/exec"
+	"os/signal"
 	"os"
 )
 
@@ -24,6 +26,8 @@ import (
 	"log"
 	"io"
 	"io/ioutil"
+	"os/signal"
+	"os"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +65,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	go func() {
+		<- c
+		log.Printf("Received termination; qutting.")
+		os.Exit(0)
+	}()
+
+
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe(":9800", nil))
 }
@@ -90,7 +104,7 @@ func contextsToGraph(ctxs []*Context) []*graph.Node {
 
 func Start(pipeline string) error {
 	log.Printf("==> Starting '%s' pipeline", pipeline)
-	defer log.Printf("<== '%s' started.", pipeline)
+	defer log.Printf("<== '%s' finished.", pipeline)
 
 	log.Printf(" |  Building dependency graph.")
 	path, err := pipelinePath(pipeline)
@@ -139,6 +153,17 @@ func Start(pipeline string) error {
 		if err != nil {
 			return err
 		}
+
+		defer func() {
+			log.Printf("    Stopping: '%s'", bundleName)
+			cmd := exec.Command("docker", "kill", string(containerId)[0:4])
+			_, err := cmd.Output()
+			if err != nil {
+				panic(err)
+			}
+			log.Printf("    Stopped.")
+		}()
+
 		log.Printf("    Started: %s", string(containerId))
 		cmd = exec.Command("docker", "inspect", "--format='{{(index (index .NetworkSettings.Ports \"9800/tcp\") 0).HostPort}}'", string(containerId)[0:4])
 		portNum, err := cmd.Output()
@@ -164,6 +189,40 @@ func Start(pipeline string) error {
 	if err := tmpl.Execute(file, pipectx); err != nil {
 		return err
 	}
+	log.Printf("    Done.")
+
+	log.Printf(" |  Compiling pipeline manager.")
+	managerBinary := fmt.Sprintf("%s/manager", path)
+	err = shell.RunAndLog("go", "build", "-o", managerBinary, managerFile)
+	if err != nil {
+		return err
+	}
+	log.Printf("    Done.")
+
+	log.Printf(" |  Running manager. CTRL-C to quit.")
+	cmd := exec.Command(managerBinary)
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+
+	go func() {
+		// wait for signal from CTRL-C
+		for range sig {
+			log.Printf("    Received CTRL-C; terminating manager.")
+			cmd.Process.Signal(os.Interrupt)
+		}
+	}()
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	// stop listening to CTRL-C now
+	signal.Stop(sig)
 	log.Printf("    Done.")
 	return nil
 }
