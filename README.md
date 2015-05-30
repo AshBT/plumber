@@ -10,7 +10,16 @@ Furthermore, we provide some higher-level capabilities by allowing developers to
 Based on information provided in a `.plumb.yml` file, the `plumb` tool can compose a set of enhancers or linkers such that their dependencies are satisfied and deploy the data processing pipeline to a (properly configured?) CoreOS cluster.
 
 ## Installation
-Download binaries.
+We do not currently have a binary for you to download. The preferred way to install `plumb` at the moment is
+
+    git clone https://github.com/qadium/plumb
+    cd plumb && make && make install
+
+You can also use
+
+    go get github.com/qadium/plumb
+
+However, this will not display the git SHA1 information with `plumb version`.
 
 ## Enhancers and linkers
 
