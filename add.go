@@ -18,7 +18,7 @@ func addOne(pipeline string, bundle string) error {
 	}
 
 	log.Printf(" |  Parsing bundle config.")
-	ctx, err := parseConfig(bundle)
+	ctx, err := parseConfigFromDir(bundle)
 	log.Printf("    Done.")
 
 	log.Printf(" |  Copying `.plumb.yml` config to `%s.yml`.", ctx.Name)
@@ -28,7 +28,7 @@ func addOne(pipeline string, bundle string) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(config, bytes, 0544); err != nil {
+	if err := ioutil.WriteFile(config, bytes, 0644); err != nil {
 		return err
 	}
 	log.Printf("    Done.")

@@ -11,7 +11,7 @@ import (
 
 type templateContext struct {
 	Wrapper string
-	Plumb   *PlumbContext
+	Plumb   *Context
 }
 
 // A Dockerfile template for python bundles. We'll make sure this is
@@ -114,7 +114,7 @@ func Bundle(path string) error {
 	defer log.Printf("<== Bundling complete.")
 
 	log.Printf(" |  Parsing bundle config.")
-	ctx, err := parseConfig(path)
+	ctx, err := parseConfigFromDir(path)
 	if err != nil {
 		return err
 	}
