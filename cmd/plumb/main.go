@@ -73,8 +73,10 @@ func main() {
 			Usage:  "start a pipeline managed by plumb",
 			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
-				name := c.Args().First()
-				fmt.Println("START", name)
+				pipeline := c.Args().First()
+				if err := plumb.Start(pipeline); err != nil {
+					panic(err)
+				}
 			},
 		},
 		{
