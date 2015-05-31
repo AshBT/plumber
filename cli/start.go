@@ -207,10 +207,9 @@ func Start(pipeline string) error {
 
 	go func() {
 		// wait for signal from CTRL-C
-		for range sig {
-			log.Printf("    Received CTRL-C; terminating manager.")
-			cmd.Process.Signal(os.Interrupt)
-		}
+		<- sig
+		log.Printf("    Received CTRL-C; terminating manager.")
+		cmd.Process.Signal(os.Interrupt)
 	}()
 
 	if err := cmd.Start(); err != nil {
