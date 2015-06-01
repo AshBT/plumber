@@ -96,8 +96,9 @@ I don't know of any others.
 
 - (✓) `plumb bundle` functionality for Python
 - ~~`plumb submit` to a local `plumbd` instance~~
-- `plumb start` on local docker instances
+- (✓) `plumb start` on local docker instances
 - ~~`plumbd` as nothing more than docker wrapper~~
+- `plumb start` on GCE with kubernetes
 - unit tests
 - bintray deploy?
 
