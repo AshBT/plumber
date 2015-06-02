@@ -12,7 +12,7 @@ if [[ $1 == "build" || $1 == "install" ]]; then
   GIT_COMMIT=$(git rev-parse HEAD)
   GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
-  go $1 -v -ldflags "-X main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}"
+  go $1 -v -ldflags "-X main.GitCommit ${GIT_COMMIT} -X main.GitDirty ${GIT_DIRTY}"
 else
   echo "We can only 'build' or 'install': got '$1' instead."
 fi

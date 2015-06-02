@@ -3,6 +3,7 @@ package main
 // The git commit that was used to build plumb. Compiler fills it in
 // with -ldflags
 var GitCommit string
+var GitDirty string
 
 const Version = "0.0.1"
 
