@@ -163,7 +163,7 @@ func Bundle(path string) error {
 
 	log.Printf(" |  Building container.")
 	imageName := fmt.Sprintf("plumb/%s", ctx.Name)
-	err = shell.RunAndLog("docker", "build", "-t", imageName, "-f", dockerfile.Name(), path)
+	err = shell.RunAndLog("docker", "build", "--pull", "-t", imageName, "-f", dockerfile.Name(), path)
 	if err != nil {
 		return err
 	}
