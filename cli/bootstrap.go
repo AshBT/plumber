@@ -25,7 +25,7 @@ func Bootstrap(commit string) error {
 && git checkout -b build %s \
 && cp -r /plumb/manager/* /src \
 && cd /src \
-&& /build.sh`, commit)); err != nil {
+&& /build.sh plumb/manager`, commit)); err != nil {
 		return err
 	}
 
