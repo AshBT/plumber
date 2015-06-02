@@ -8,10 +8,8 @@ import (
 //	"text/template"
 	"path/filepath"
 	"github.com/qadium/plumb/graph"
-//	"github.com/qadium/plumb/shell"
+	"github.com/qadium/plumb/shell"
 	"os/exec"
-	"os/signal"
-	"os"
 )
 
 func contextsToGraph(ctxs []*Context) []*graph.Node {
@@ -77,7 +75,7 @@ func Start(pipeline string) error {
 	log.Printf("    Completed.")
 
 	log.Printf(" |  Starting bundles...")
-	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", "manager"}
+	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", "plumb/manager"}
 	// walk through the reverse sorted bundles and start them up
 	for i := len(sorted) - 1; i >= 0; i-- {
 		bundleName := sorted[i]
@@ -112,28 +110,10 @@ func Start(pipeline string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Running manager. CTRL-C to quit.")
-	cmd := exec.Command("docker", managerDockerArgs...)
-
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
-
-	go func() {
-		// wait for signal from CTRL-C
-		<- sig
-		log.Printf("    Received CTRL-C; terminating manager.")
-		cmd.Process.Signal(os.Interrupt)
-	}()
-
-	if err := cmd.Start(); err != nil {
+	err = shell.RunAndLog("docker", managerDockerArgs...)
+	if err != nil {
 		return err
 	}
-
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-
-	// stop listening to CTRL-C now
-	signal.Stop(sig)
 	log.Printf("    Done.")
 	return nil
 }
