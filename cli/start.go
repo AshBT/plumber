@@ -5,80 +5,14 @@ import (
 	"log"
 //	"gopkg.in/yaml.v2"
 //	"io/ioutil"
-	"text/template"
+//	"text/template"
 	"path/filepath"
 	"github.com/qadium/plumb/graph"
-	"github.com/qadium/plumb/shell"
+//	"github.com/qadium/plumb/shell"
 	"os/exec"
 	"os/signal"
 	"os"
 )
-
-type pipelineContext struct {
-	Pipeline []string	// host:port
-}
-
-const manager = `
-package main
-
-import (
-	"net/http"
-	"log"
-	"io"
-	"io/ioutil"
-	"os/signal"
-	"os"
-)
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	var err error
-	client := &http.Client{}
-	body := r.Body
-	defer body.Close()
-
-	var (
-		req *http.Request
-		resp *http.Response
-	)
-
-	{{ range .Pipeline }}
-	req, err = http.NewRequest("POST", "{{ . }}", body)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err = client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	body = resp.Body
-	defer resp.Body.Close()
-	if err != nil {
-		panic(err)
-	}
-	{{ end }}
-
-	final, err := ioutil.ReadAll(io.LimitReader(body, 1048576))
-	if err != nil {
-		panic(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(final)
-}
-
-func main() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-
-	go func() {
-		<- c
-		log.Printf("Received termination; qutting.")
-		os.Exit(0)
-	}()
-
-
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":9800", nil))
-}
-`
 
 func contextsToGraph(ctxs []*Context) []*graph.Node {
 	nodes := make([]*graph.Node, len(ctxs))
@@ -143,7 +77,7 @@ func Start(pipeline string) error {
 	log.Printf("    Completed.")
 
 	log.Printf(" |  Starting bundles...")
-	pipectx := pipelineContext{}
+	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", "manager"}
 	// walk through the reverse sorted bundles and start them up
 	for i := len(sorted) - 1; i >= 0; i-- {
 		bundleName := sorted[i]
@@ -156,7 +90,7 @@ func Start(pipeline string) error {
 
 		defer func() {
 			log.Printf("    Stopping: '%s'", bundleName)
-			cmd := exec.Command("docker", "kill", string(containerId)[0:4])
+			cmd := exec.Command("docker", "rm", "-f", string(containerId)[0:4])
 			_, err := cmd.Output()
 			if err != nil {
 				panic(err)
@@ -170,37 +104,15 @@ func Start(pipeline string) error {
 		if err != nil {
 			return err
 		}
-		pipectx.Pipeline = append(pipectx.Pipeline, fmt.Sprintf("http://192.168.59.103:%s", string(portNum[:len(portNum)-1])))
+		// should use docker host IP (for local deploy)
+		// should use "names" for kubernetes deploy
+		managerDockerArgs = append(managerDockerArgs, fmt.Sprintf("http://172.17.42.1:%s", string(portNum[:len(portNum)-1])))
 	}
-	log.Printf("    %v", pipectx)
-	log.Printf("    Done.")
-
-	log.Printf(" |  Writing pipeline manager.")
-	managerFile := fmt.Sprintf("%s/manager.go", path)
-	file, err := os.Create(managerFile)
-	if err != nil {
-		return err
-	}
-
-	tmpl, err := template.New("manager").Parse(manager)
-	if err != nil {
-		return err
-	}
-	if err := tmpl.Execute(file, pipectx); err != nil {
-		return err
-	}
-	log.Printf("    Done.")
-
-	log.Printf(" |  Compiling pipeline manager.")
-	managerBinary := fmt.Sprintf("%s/manager", path)
-	err = shell.RunAndLog("go", "build", "-o", managerBinary, managerFile)
-	if err != nil {
-		return err
-	}
+	log.Printf("    %v", managerDockerArgs)
 	log.Printf("    Done.")
 
 	log.Printf(" |  Running manager. CTRL-C to quit.")
-	cmd := exec.Command(managerBinary)
+	cmd := exec.Command("docker", managerDockerArgs...)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
