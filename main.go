@@ -34,7 +34,7 @@ func main() {
 	versionString := versionString()
 	app := cli.NewApp()
 	app.Name = "plumb"
-	app.Usage = "a command line tool for managing information discovery"
+	app.Usage = "a command line tool for managing distributed data pipelines"
 	app.Version = versionString
 	// app.Flags = []cli.Flag{
 	// 	cli.StringFlag{
@@ -45,6 +45,18 @@ func main() {
 	// 	},
 	// }
 	app.Commands = []cli.Command{
+		{
+			Name:   "add",
+			Usage:  "add a plumb-enabled bundle to a pipeline",
+			Before: createRequiredArgCheck(atLeast(2), "Please provide both a pipeline name and a bundle path."),
+			Action: func(c *cli.Context) {
+				pipeline := c.Args()[0]
+				bundles := c.Args()[1:]
+				if err := plumb.Add(pipeline, bundles...); err != nil {
+					panic(err)
+				}
+			},
+		},
 		{
 			Name:   "create",
 			Usage:  "create a pipeline managed by plumb",
@@ -57,13 +69,16 @@ func main() {
 			},
 		},
 		{
-			Name:   "add",
-			Usage:  "add a plumb-enabled bundle to a pipeline",
-			Before: createRequiredArgCheck(atLeast(2), "Please provide both a pipeline name and a bundle path."),
+			Name:	"bootstrap",
+			Usage:  "bootstrap local setup for use with plumb",
+			Description:
+`The bootstrap command builds the latest manager for use with plumb.
+This packages the manager into a minimal container for use on localhost.
+
+When running the pipeline on Google Cloud, the manager container is
+pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
-				pipeline := c.Args()[0]
-				bundles := c.Args()[1:]
-				if err := plumb.Add(pipeline, bundles...); err != nil {
+				if err := plumb.Bootstrap(GitCommit); err != nil {
 					panic(err)
 				}
 			},
@@ -94,8 +109,12 @@ func main() {
 			Name:  "version",
 			Usage: "more detailed version information for plumb",
 			Action: func(c *cli.Context) {
+				commit := GitCommit
+				if GitDirty != "" {
+					commit += "+CHANGES"
+				}
 				fmt.Println("plumb version:", versionString)
-				fmt.Println("git commit:", GitCommit)
+				fmt.Println("git commit:", commit)
 			},
 		},
 	}
