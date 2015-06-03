@@ -85,10 +85,18 @@ pushed to your project's private repository.`,
 		{
 			Name:   "start",
 			Usage:  "start a pipeline managed by plumber",
+			Flags:  []cli.Flag {
+				cli.StringFlag{
+					Name: "gce",
+					Value: "",
+					Usage: "Google Cloud project ID",
+				},
+			},
 			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
 				pipeline := c.Args().First()
-				if err := plumber.Start(pipeline); err != nil {
+				gce := c.String("gce")
+				if err := plumber.Start(pipeline, gce); err != nil {
 					panic(err)
 				}
 			},
