@@ -69,16 +69,15 @@ func main() {
 			},
 		},
 		{
-			Name:	"bootstrap",
-			Usage:  "bootstrap local setup for use with plumb",
-			Description:
-`The bootstrap command builds the latest manager for use with plumb.
+			Name:  "bootstrap",
+			Usage: "bootstrap local setup for use with plumb",
+			Description: `The bootstrap command builds the latest manager for use with plumb.
 This packages the manager into a minimal container for use on localhost.
 
 When running the pipeline on Google Cloud, the manager container is
 pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
-				if err := plumb.Bootstrap(GitCommit); err != nil {
+				if err := plumb.Bootstrap(); err != nil {
 					panic(err)
 				}
 			},
@@ -109,12 +108,8 @@ pushed to your project's private repository.`,
 			Name:  "version",
 			Usage: "more detailed version information for plumb",
 			Action: func(c *cli.Context) {
-				commit := GitCommit
-				if GitDirty != "" {
-					commit += "+CHANGES"
-				}
 				fmt.Println("plumb version:", versionString)
-				fmt.Println("git commit:", commit)
+				fmt.Println("git commit:", GitCommit)
 			},
 		},
 	}
