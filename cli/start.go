@@ -10,6 +10,13 @@ import (
 	"github.com/qadium/plumber/shell"
 	"os/exec"
 	"path/filepath"
+	// "golang.org/x/oauth2/google"
+	// "golang.org/x/oauth2"
+	// "google.golang.org/cloud"
+	// "google.golang.org/cloud/container"
+	// kubectl "github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl/cmd"
+	// cmdutil "github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl/cmd/util"
+	// "os"
 )
 
 func contextsToGraph(ctxs []*Context) []*graph.Node {
@@ -34,16 +41,66 @@ func contextsToGraph(ctxs []*Context) []*graph.Node {
 	return nodes
 }
 
-func Start(pipeline string) error {
+func Start(pipeline string, gce string) error {
 	log.Printf("==> Starting '%s' pipeline", pipeline)
 	defer log.Printf("<== '%s' finished.", pipeline)
 
-	log.Printf(" |  Building dependency graph.")
 	path, err := pipelinePath(pipeline)
 	if err != nil {
 		return err
 	}
 
+	if gce != "" {
+		// we can probably get the project name with google cloud SDK
+
+		// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
+		// step 2. push them to gce
+		// step 3. generate k8s files in pipelinePath
+		// step 4. launch all the services
+		err := shell.RunAndLog("kubectl", "create", "-f", fmt.Sprintf("%s/k8s", path))
+		if err != nil {
+			return err
+		}
+		// step 5: open up the firewall?
+		return nil
+	}
+	log.Printf("NO GCE ID provided. running locally")
+	// start GOOGLE experiments?
+	// when start is invoked with --gce PROJECT_ID, this piece of code
+	// should be run
+	// client, err := google.DefaultClient(oauth2.NoContext, "https://www.googleapis.com/auth/compute")
+	// if err != nil {
+	// 	return err
+	// }
+	// cloudCtx := cloud.NewContext("kubernetes-fun", client)
+	//
+	// resources, err := container.Clusters(cloudCtx, "")
+	// if err != nil {
+	// 	return err
+	// }
+	// for _, op := range resources {
+	// 	log.Printf("%v", op)
+	// }
+	//
+	// loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+	// log.Printf("loading rules: %v", *loadingRules)
+	// configOverrides := &clientcmd.ConfigOverrides{}
+	// kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+	// cfg, err := kubeConfig.ClientConfig()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// well, we just shell out!
+	// f := cmdutil.NewFactory(nil)
+	// cmd := kubectl.NewCmdCreate(f, os.Stdout)
+	// f.BindFlags(cmd.PersistentFlags())
+	// cmd.Flags().Set("filename", "/Users/echu/.plumber/foo/k8s")
+	// cmd.Run(cmd, []string{})
+
+	// end GOOGLE experiments
+
+	log.Printf(" |  Building dependency graph.")
 	configs, err := filepath.Glob(fmt.Sprintf("%s/*.yml", path))
 	if err != nil {
 		return err
