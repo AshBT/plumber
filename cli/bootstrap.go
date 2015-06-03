@@ -2,37 +2,74 @@ package cli
 
 import (
 	"fmt"
-	"log"
+	"github.com/qadium/plumb/bindata"
 	"github.com/qadium/plumb/shell"
+	"io/ioutil"
+	"log"
+	"os/user"
+	"os"
 	// "gopkg.in/yaml.v2"
-	// "io/ioutil"
 )
 
-func Bootstrap(commit string) error {
-	log.Printf("==> Bootstraping plumb.")
-	defer log.Printf("<== Bootstrap complete.")
-
-	if err := shell.RunAndLog("docker",
-		"run",
-		"--rm",
-		"--entrypoint=\"/bin/bash\"",
-		"-v",
-		"/var/run/docker.sock:/var/run/docker.sock",
-		"centurylink/golang-builder",
-		"-c",
-		fmt.Sprintf(`git clone https://github.com/qadium/plumb /plumb \
-&& cd /plumb \
-&& git checkout -b build %s \
-&& cp -r /plumb/manager/* /src \
-&& cd /src \
-&& /build.sh plumb/manager`, commit)); err != nil {
+func writeAsset(asset string, directory string) error {
+	log.Printf(" |     Writing '%s'", asset)
+	data, err := bindata.Asset(fmt.Sprintf("manager/%s", asset))
+	if err != nil {
 		return err
 	}
 
+	if err := ioutil.WriteFile(fmt.Sprintf("%s/%s", directory, asset), data, 0644); err != nil {
+		return err
+	}
+	log.Printf("       Done.")
+	return nil
+}
+
+func Bootstrap() error {
 	// use docker to compile the manager and copy the binary into
 	// another docker container
 	//
 	// tag this new container
+	log.Printf("==> Bootstraping plumb.")
+	defer log.Printf("<== Bootstrap complete.")
+
+	log.Printf(" |  Creating temp directory.")
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
+	directory := fmt.Sprintf("%s/.plumb-bootstrap", usr.HomeDir)
+
+	if err := os.MkdirAll(directory, 0755); err != nil {
+		return err
+	}
+	defer func() {
+		if err := os.RemoveAll(directory); err != nil {
+			panic(err)
+		}
+	}()
+	log.Printf("    Temp directory created at '%s'", directory)
+
+	log.Printf(" |  Writing manager source files.")
+	if err := writeAsset("manager.go", directory); err != nil {
+		return err
+	}
+	if err := writeAsset("Dockerfile", directory); err != nil {
+		return err
+	}
+	log.Printf("    Done")
+
+	if err := shell.RunAndLog("docker",
+		"run",
+		"--rm",
+		"-v",
+		"/var/run/docker.sock:/var/run/docker.sock",
+		"-v",
+		fmt.Sprintf("%s:/src", directory),
+		"centurylink/golang-builder",
+		"plumb/manager"); err != nil {
+		return err
+	}
 
 	return nil
 }
