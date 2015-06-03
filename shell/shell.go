@@ -1,12 +1,12 @@
 package shell
 
 import (
-	"os/exec"
-	"os/signal"
-	"os"
-	"log"
 	"bufio"
 	"io"
+	"log"
+	"os"
+	"os/exec"
+	"os/signal"
 	"strings"
 )
 
@@ -22,7 +22,7 @@ func logBuffer(prefix string, pipe io.ReadCloser) {
 }
 
 func RunAndLog(name string, args ...string) error {
-	log.Printf("    Exec shell: '%s'", name + " " + strings.Join(args, " "))
+	log.Printf("    Exec shell: '%s'", name+" "+strings.Join(args, " "))
 	cmd := exec.Command(name, args...)
 
 	// install signal handler to forward interrupts to subprocess
@@ -32,7 +32,7 @@ func RunAndLog(name string, args ...string) error {
 
 	go func() {
 		// wait for signal from CTRL-C
-		<- sig
+		<-sig
 		log.Printf("    Received CTRL-C; terminating '%s' process.", name)
 		cmd.Process.Signal(os.Interrupt)
 	}()

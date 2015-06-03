@@ -1,4 +1,5 @@
 package cli
+
 // put bundle under test by inputting yaml from string and checking
 // that output Dockerfile is expected
 //

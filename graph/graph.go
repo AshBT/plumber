@@ -5,13 +5,13 @@ import (
 )
 
 type Node struct {
-	Name string
+	Name     string
 	Children []*Node
-	dirty bool
-	visited bool
+	dirty    bool
+	visited  bool
 }
 
-func NewNode(name string) (*Node) {
+func NewNode(name string) *Node {
 	n := Node{name, nil, false, false}
 	return &n
 }

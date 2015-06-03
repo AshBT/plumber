@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
 	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 type Field struct {
@@ -23,11 +23,11 @@ type Context struct {
 
 const bundleConfig = ".plumb.yml"
 
-func parseConfigFromDir(path string) (* Context, error) {
+func parseConfigFromDir(path string) (*Context, error) {
 	return parseConfig(fmt.Sprintf("%s/%s", path, bundleConfig))
 }
 
-func parseConfig(path string) (* Context, error) {
+func parseConfig(path string) (*Context, error) {
 	ctx := Context{}
 
 	bytes, err := ioutil.ReadFile(path)

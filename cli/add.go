@@ -2,10 +2,10 @@ package cli
 
 import (
 	"fmt"
-	"log"
 	"github.com/qadium/plumb/shell"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 )
 
 func addOne(pipeline string, bundle string) error {
@@ -35,7 +35,7 @@ func addOne(pipeline string, bundle string) error {
 
 	log.Printf(" |  Adding `%s.yml` to version control.", ctx.Name)
 
-	if err := shell.RunAndLog("git", "-C", path, "add", config ); err != nil {
+	if err := shell.RunAndLog("git", "-C", path, "add", config); err != nil {
 		return err
 	}
 

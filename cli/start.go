@@ -3,19 +3,19 @@ package cli
 import (
 	"fmt"
 	"log"
-//	"gopkg.in/yaml.v2"
-//	"io/ioutil"
-//	"text/template"
-	"path/filepath"
+	//	"gopkg.in/yaml.v2"
+	//	"io/ioutil"
+	//	"text/template"
 	"github.com/qadium/plumb/graph"
 	"github.com/qadium/plumb/shell"
 	"os/exec"
+	"path/filepath"
 )
 
 func contextsToGraph(ctxs []*Context) []*graph.Node {
 	nodes := make([]*graph.Node, len(ctxs))
-	m := make(map[string]int) 	// this map maps inputs to the index of the
-								// node that uses it
+	m := make(map[string]int) // this map maps inputs to the index of the
+	// node that uses it
 	// build a map to create the DAG
 	for i, ctx := range ctxs {
 		nodes[i] = graph.NewNode(ctx.Name)

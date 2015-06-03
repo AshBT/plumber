@@ -2,11 +2,11 @@ package cli
 
 import (
 	"fmt"
+	"github.com/qadium/plumb/shell"
 	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
-	"github.com/qadium/plumb/shell"
 )
 
 type templateContext struct {

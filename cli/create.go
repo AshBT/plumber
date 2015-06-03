@@ -1,11 +1,11 @@
 package cli
 
 import (
-	"os/user"
-	"os"
 	"fmt"
-	"log"
 	"github.com/qadium/plumb/shell"
+	"log"
+	"os"
+	"os/user"
 )
 
 // (TODO) break out into separate file?
@@ -22,7 +22,6 @@ func Create(name string) error {
 	// creates a pipeline by initializing a git repo at ~/.plumb/<NAME>
 	log.Printf("==> Creating '%s' pipeline", name)
 	defer log.Printf("<== Creation complete.")
-
 
 	log.Printf(" |  Making directory")
 	path, err := pipelinePath(name)
