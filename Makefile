@@ -1,25 +1,20 @@
-# Whether to build debug
-GO_BINDATA_DEBUG=true
+.PHONY: build all clean test install
+all: build test
 
-.PHONY: build debug release all clean test install
-all: debug
+bindata/bindata.go:
+	mkdir -p bindata
+	go-bindata -pkg="bindata" -o=$@ manager
 
-debug: GO_BINDATA_DEBUG=true
-debug: build test
-
-release: GO_BINDATA_DEBUG=false
-release: build test
-
-build:
+build: bindata/bindata.go
 	sh scripts/do.sh build
 
-install:
+install: bindata/bindata.go
 	sh scripts/do.sh install
 
-test:
+test: build
 	go test -cover ./...
 
 clean:
-	rm data/* plumb && \
-	rmdir data && \
+	@rm bindata/* plumb
+	@rmdir bindata
 	go clean
