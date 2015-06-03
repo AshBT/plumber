@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"github.com/qadium/plumb/shell"
+	"github.com/qadium/plumber/shell"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -21,7 +21,7 @@ func addOne(pipeline string, bundle string) error {
 	ctx, err := parseConfigFromDir(bundle)
 	log.Printf("    Done.")
 
-	log.Printf(" |  Copying `.plumb.yml` config to `%s.yml`.", ctx.Name)
+	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", ctx.Name)
 	config := fmt.Sprintf("%s/%s.yml", path, ctx.Name)
 	bytes, err := yaml.Marshal(&ctx)
 	if err != nil {
@@ -40,7 +40,7 @@ func addOne(pipeline string, bundle string) error {
 	}
 
 	message := fmt.Sprintf("Updated '%s' config.", ctx.Name)
-	if err := shell.RunAndLog("git", "-C", path, "commit", "-m", message, "--author", "\"Plumb Bot <plumb@qadium.com>\""); err != nil {
+	if err := shell.RunAndLog("git", "-C", path, "commit", "-m", message, "--author", "\"Plumber Bot <plumber@qadium.com>\""); err != nil {
 		return err
 	}
 

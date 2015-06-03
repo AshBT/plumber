@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"github.com/qadium/plumb/shell"
+	"github.com/qadium/plumber/shell"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,7 +11,7 @@ import (
 
 type templateContext struct {
 	Wrapper string
-	Plumb   *Context
+	Plumber *Context
 }
 
 // A Dockerfile template for python bundles. We'll make sure this is
@@ -24,8 +24,8 @@ RUN mkdir -p /usr/src/bundle
 WORKDIR /usr/src/bundle
 
 COPY . /usr/src/bundle
-{{ if .Plumb.Install }}
-{{ range .Plumb.Install }}
+{{ if .Plumber.Install }}
+{{ range .Plumber.Install }}
 RUN {{ . }}
 {{ end }}
 {{ else }}
@@ -33,22 +33,22 @@ RUN pip install -r requirements.txt
 {{ end }}
 RUN pip install bottle
 EXPOSE 9800
-{{ range .Plumb.Env }}
+{{ range .Plumber.Env }}
 ENV {{ . }}
 {{ end }}
 CMD ["python", "{{ .Wrapper }}"]
 `
 
 const wrapperTemplate = `
-import {{ .Plumb.Name }}
+import {{ .Plumber.Name }}
 from bottle import post, route, run, request, HTTPResponse
 
-__INFO = {'bundle': '{{ .Plumb.Name }}',
+__INFO = {'bundle': '{{ .Plumber.Name }}',
   'inputs': {
-    {{ range .Plumb.Inputs }}'{{ .Name }}': '{{ .Description }}',{{ end }}
+    {{ range .Plumber.Inputs }}'{{ .Name }}': '{{ .Description }}',{{ end }}
   },
   'outputs': {
-    {{ range .Plumb.Outputs }}'{{ .Name }}': '{{ .Description }}',{{ end }}
+    {{ range .Plumber.Outputs }}'{{ .Name }}': '{{ .Description }}',{{ end }}
   }
 }
 
@@ -69,7 +69,7 @@ def index():
 
 	# Instead of throwing errors when required fields are missing,
 	# maybe we just return the payload instead and add a note?
-    {{ range .Plumb.Inputs }}
+    {{ range .Plumber.Inputs }}
     if not '{{ .Name }}' in data:
         raise HTTPResponse(
             body = "Missing required '{{ .Name }}' field in JSON data.",
@@ -77,10 +77,10 @@ def index():
         )
     {{ end }}
     # run the enhancer
-    output = {{ .Plumb.Name }}.run(data)
+    output = {{ .Plumber.Name }}.run(data)
 
     # validate output data
-    {{ range .Plumb.Outputs }}
+    {{ range .Plumber.Outputs }}
     if not '{{ .Name }}' in output:
         raise HTTPResponse(
             body = "Unexpected output; missing '{{ .Name }}' field.",
@@ -121,7 +121,7 @@ func Bundle(path string) error {
 	log.Printf("    %v", ctx)
 
 	log.Printf(" |  Making temp file for python wrapper")
-	wrapper, err := ioutil.TempFile(path, "plumb")
+	wrapper, err := ioutil.TempFile(path, "plumber")
 	defer removeTempFile(wrapper)
 	if err != nil {
 		return err
@@ -130,7 +130,7 @@ func Bundle(path string) error {
 
 	templateCtx := templateContext{
 		Wrapper: wrapper.Name(),
-		Plumb:   ctx,
+		Plumber:   ctx,
 	}
 
 	log.Printf(" |  Writing wrapper.")
@@ -144,7 +144,7 @@ func Bundle(path string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Making temp file for Dockerfile")
-	dockerfile, err := ioutil.TempFile(path, "plumb")
+	dockerfile, err := ioutil.TempFile(path, "plumber")
 	defer removeTempFile(dockerfile)
 	if err != nil {
 		return err
@@ -162,11 +162,11 @@ func Bundle(path string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Building container.")
-	imageName := fmt.Sprintf("plumb/%s", ctx.Name)
+	imageName := fmt.Sprintf("plumber/%s", ctx.Name)
 	err = shell.RunAndLog("docker", "build", "--pull", "-t", imageName, "-f", dockerfile.Name(), path)
 	if err != nil {
 		return err
 	}
-	log.Printf("    Container 'plumb/%s' built.", ctx.Name)
+	log.Printf("    Container 'plumber/%s' built.", ctx.Name)
 	return nil
 }

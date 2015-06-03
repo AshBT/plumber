@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"github.com/qadium/plumb/bindata"
-	"github.com/qadium/plumb/shell"
+	"github.com/qadium/plumber/bindata"
+	"github.com/qadium/plumber/shell"
 	"io/ioutil"
 	"log"
 	"os/user"
@@ -38,7 +38,7 @@ func Bootstrap() error {
 	if err != nil {
 		return err
 	}
-	directory := fmt.Sprintf("%s/.plumb-bootstrap", usr.HomeDir)
+	directory := fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir)
 
 	if err := os.MkdirAll(directory, 0755); err != nil {
 		return err
@@ -67,7 +67,7 @@ func Bootstrap() error {
 		"-v",
 		fmt.Sprintf("%s:/src", directory),
 		"centurylink/golang-builder",
-		"plumb/manager"); err != nil {
+		"plumber/manager"); err != nil {
 		return err
 	}
 

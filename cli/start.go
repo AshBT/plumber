@@ -6,8 +6,8 @@ import (
 	//	"gopkg.in/yaml.v2"
 	//	"io/ioutil"
 	//	"text/template"
-	"github.com/qadium/plumb/graph"
-	"github.com/qadium/plumb/shell"
+	"github.com/qadium/plumber/graph"
+	"github.com/qadium/plumber/shell"
 	"os/exec"
 	"path/filepath"
 )
@@ -75,12 +75,12 @@ func Start(pipeline string) error {
 	log.Printf("    Completed.")
 
 	log.Printf(" |  Starting bundles...")
-	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", "plumb/manager"}
+	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", "plumber/manager"}
 	// walk through the reverse sorted bundles and start them up
 	for i := len(sorted) - 1; i >= 0; i-- {
 		bundleName := sorted[i]
 		log.Printf("    Starting: '%s'", bundleName)
-		cmd := exec.Command("docker", "run", "-d", "-P", fmt.Sprintf("plumb/%s", bundleName))
+		cmd := exec.Command("docker", "run", "-d", "-P", fmt.Sprintf("plumber/%s", bundleName))
 		containerId, err := cmd.Output()
 		if err != nil {
 			return err
@@ -106,7 +106,7 @@ func Start(pipeline string) error {
 		// should use "names" for kubernetes deploy
 		managerDockerArgs = append(managerDockerArgs, fmt.Sprintf("http://172.17.42.1:%s", string(portNum[:len(portNum)-1])))
 	}
-	log.Printf("    %v", managerDockerArgs)
+	log.Printf("    Args passed to 'docker': %v", managerDockerArgs)
 	log.Printf("    Done.")
 
 	log.Printf(" |  Running manager. CTRL-C to quit.")

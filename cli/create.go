@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"github.com/qadium/plumb/shell"
+	"github.com/qadium/plumber/shell"
 	"log"
 	"os"
 	"os/user"
@@ -14,7 +14,7 @@ func pipelinePath(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path := fmt.Sprintf("%s/.plumb/%s", usr.HomeDir, name)
+	path := fmt.Sprintf("%s/.plumber/%s", usr.HomeDir, name)
 	return path, nil
 }
 

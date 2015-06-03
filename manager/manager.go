@@ -1,4 +1,4 @@
-package main // import "github.com/qadium/plumb/manager"
+package main // import "github.com/qadium/plumber/manager"
 
 import (
 	"io"

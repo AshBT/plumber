@@ -15,6 +15,6 @@ test: build
 	go test -cover ./...
 
 clean:
-	@rm bindata/* plumb
+	@rm bindata/* plumber
 	@rmdir bindata
 	go clean

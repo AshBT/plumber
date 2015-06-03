@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/codegangsta/cli"
-	plumb "github.com/qadium/plumb/cli"
+	plumber "github.com/qadium/plumber/cli"
 	"os"
 )
 
@@ -33,82 +33,82 @@ func atLeast(num int) func(args cli.Args) bool {
 func main() {
 	versionString := versionString()
 	app := cli.NewApp()
-	app.Name = "plumb"
+	app.Name = "plumber"
 	app.Usage = "a command line tool for managing distributed data pipelines"
 	app.Version = versionString
 	// app.Flags = []cli.Flag{
 	// 	cli.StringFlag{
 	// 		Name:   "server, s",
-	// 		Value:  "/var/run/plumb.sock",
-	// 		Usage:  "location of plumb server socket",
+	// 		Value:  "/var/run/plumber.sock",
+	// 		Usage:  "location of plumber server socket",
 	// 		EnvVar: "LINK_SERVER",
 	// 	},
 	// }
 	app.Commands = []cli.Command{
 		{
 			Name:   "add",
-			Usage:  "add a plumb-enabled bundle to a pipeline",
+			Usage:  "add a plumber-enabled bundle to a pipeline",
 			Before: createRequiredArgCheck(atLeast(2), "Please provide both a pipeline name and a bundle path."),
 			Action: func(c *cli.Context) {
 				pipeline := c.Args()[0]
 				bundles := c.Args()[1:]
-				if err := plumb.Add(pipeline, bundles...); err != nil {
+				if err := plumber.Add(pipeline, bundles...); err != nil {
 					panic(err)
 				}
 			},
 		},
 		{
 			Name:   "create",
-			Usage:  "create a pipeline managed by plumb",
+			Usage:  "create a pipeline managed by plumber",
 			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
 				path := c.Args().First()
-				if err := plumb.Create(path); err != nil {
+				if err := plumber.Create(path); err != nil {
 					panic(err)
 				}
 			},
 		},
 		{
 			Name:  "bootstrap",
-			Usage: "bootstrap local setup for use with plumb",
-			Description: `The bootstrap command builds the latest manager for use with plumb.
+			Usage: "bootstrap local setup for use with plumber",
+			Description: `The bootstrap command builds the latest manager for use with plumber.
 This packages the manager into a minimal container for use on localhost.
 
 When running the pipeline on Google Cloud, the manager container is
 pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
-				if err := plumb.Bootstrap(); err != nil {
+				if err := plumber.Bootstrap(); err != nil {
 					panic(err)
 				}
 			},
 		},
 		{
 			Name:   "start",
-			Usage:  "start a pipeline managed by plumb",
+			Usage:  "start a pipeline managed by plumber",
 			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
 				pipeline := c.Args().First()
-				if err := plumb.Start(pipeline); err != nil {
+				if err := plumber.Start(pipeline); err != nil {
 					panic(err)
 				}
 			},
 		},
 		{
 			Name:   "bundle",
-			Usage:  "bundle a node for use in a pipeline managed by plumb",
+			Usage:  "bundle a node for use in a pipeline managed by plumber",
 			Before: createRequiredArgCheck(exactly(1), "Please provide a bundle path."),
 			Action: func(c *cli.Context) {
 				path := c.Args().First()
-				if err := plumb.Bundle(path); err != nil {
+				if err := plumber.Bundle(path); err != nil {
 					panic(err)
 				}
 			},
 		},
 		{
 			Name:  "version",
-			Usage: "more detailed version information for plumb",
+			Usage: "more detailed version information for plumber",
 			Action: func(c *cli.Context) {
-				fmt.Println("plumb version:", versionString)
+				fmt.Println("plumber version:", versionString)
 				fmt.Println("git commit:", GitCommit)
 			},
 		},
