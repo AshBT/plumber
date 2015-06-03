@@ -6,10 +6,10 @@ bindata/bindata.go:
 	go-bindata -pkg="bindata" -o=$@ manager
 
 build: bindata/bindata.go
-	sh scripts/do.sh build
+	./scripts/do.sh build
 
 install: bindata/bindata.go
-	sh scripts/do.sh install
+	./scripts/do.sh install
 
 test: build
 	go test -cover ./...
