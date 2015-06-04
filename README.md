@@ -29,15 +29,24 @@ The `plumber` tool will take care of creating the necessary wrappers to enable u
 ## Testing
 By decoupling the transformations on each piece of data, we can also programmatically test and document enhancers and linkers. This gives end-users a high level of assurance that their data processing pipeline is correct, preventing garbage in and garbage out.
 
-# Examples
-## Hello, world
+# Alternatives
+## Storm
+Storm topologies... very similar, not as dynamic. Not container based. Performance?
+
+## Docker compose aka Fig
+For more generic services; explicit linking. Full control of docker containers.
+
+## Others?
+I don't know of any others.
+
+# Hello, world
 First, you'll need to bootstrap `plumber` by creating a `manager` container.
 
     plumber bootstrap
 
 Next, you'll need some data enhancers.
 
-### Data enhancers
+## Data enhancers
 For the "hello, world" demo of `plumber`, you will need to clone two repositories:
 
     git clone github.com/qadium/plumber-hello
@@ -51,15 +60,15 @@ First, we'll play with the `plumber bundle` command. After cloning the repositor
 
     cd plumber-hello && plumber bundle .
 
-This will package the source code into a Docker container which you can run locally with `docker run -p 9800:9800 plumber/hello`.
+This will package the *directory* into a Docker container which you can run locally with `docker run -p 9800:9800 plumber/hello`.
 
-You can then `curl localhost:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` and receive the output from the greeter, which should look something like
+You can then `curl localhost:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` (if you're on OSX, replace `localhost` with the output of `boot2docker ip`) and receive the output from the greeter, which should look something like
 
     {"name": "qadium", "hello", "Hello, qadium, my name is bazbux"}
 
 You can do the same with `plumber-host`. First, navigate to its directory and run `plumber bundle .`. You can run a container locally with `docker run -p 9800:9800 plumber/host`. You can again use `curl` to send data to the server and see its response.
 
-### Pipelines
+## Pipelines
 We now create a pipeline
 
     plumber create foo
@@ -86,7 +95,7 @@ If you're running on OSX, replace the curl command with
 
     curl `boot2docker ip`:9800 -d '{"hostname": "qadium.com"}' -H 'Content-Type: application/json'
 
-### Run on Google Cloud
+## Run on Google Cloud
 Running on Google Cloud is very straightforward. First, ensure you have an account and have installed the Google Cloud SDK. Log in with
 
     gcloud auth login
@@ -107,6 +116,29 @@ The `PROJECT-ID` for your cloud can be found from the Google Cloud developer con
 
 ## A note on data sources and sinks
 Data sources and sinks do not fit nicely into our model of "JSON in, JSON out", since a data source is essentially "nothing in, JSON out," and a data sink is "JSON in, nothing out." While we plan to provide support for creating data sources and sinks, these can be emulated with simple HTTP get requests (data source) and proper handling of the response (data sink).
+
+# Plumber configuration file
+A sample `.plumb.yml` file is
+```YAML
+language: python  # plumb currently only supports python 2
+name: hello       # this must match the name of the module to import
+inputs:
+  - name: name
+    description: The name of the greeter!
+    type: string
+outputs:
+  # note that outputs only need to document *additional* fields that
+  # your bundle added
+  - name: hello
+    description: The greet text
+    type: string
+env:
+  - NAME=bazbux
+install:
+  # any custom install steps; if omitted, uses
+  # `pip install -r requirements.txt`
+  - pip install -r requirements.txt
+```
 
 # Command line tool
 Here's the help-text for `plumber`
@@ -135,16 +167,6 @@ GLOBAL OPTIONS:
    --help, -h		show help
    --version, -v	print the version
 ```
-
-# Alternatives
-## Storm
-Storm topologies... very similar, not as dynamic. Not container based. Performance?
-
-## Docker compose aka Fig
-For more generic services; explicit linking. Full control of docker containers.
-
-## Others?
-I don't know of any others.
 
 # Roadmap
 *v0.1.0*
