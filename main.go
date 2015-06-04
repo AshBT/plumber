@@ -96,7 +96,7 @@ pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
 				pipeline := c.Args().First()
 				gce := c.String("gce")
-				if err := plumber.Start(pipeline, gce); err != nil {
+				if err := plumber.Start(pipeline, gce, versionString, GitCommit); err != nil {
 					panic(err)
 				}
 			},
