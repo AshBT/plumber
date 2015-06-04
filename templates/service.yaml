@@ -1,0 +1,17 @@
+apiVersion: v1beta3
+kind: Service
+metadata:
+  labels:
+    name: {{ .BundleName }}
+  name: {{ .BundleName }}
+spec:
+  ports:
+  - port: 9800
+    targetPort: 9800
+    protocol: TCP
+  selector:
+    name: {{ .BundleName }}
+    pipeline: {{ .PipelineName }}
+  {{ if .ExternalFacing }}
+  createExternalLoadBalancer: true
+  {{ end }}

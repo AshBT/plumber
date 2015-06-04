@@ -1,0 +1,33 @@
+apiVersion: v1beta3
+kind: ReplicationController
+metadata:
+  labels:
+    name: {{ .BundleName }}
+  name: {{ .BundleName }}
+spec:
+  replicas: 1
+  selector:
+    name: {{ .BundleName }}
+  template:
+    metadata:
+      labels:
+        name: {{ .BundleName }}
+        pipeline: {{ .PipelineName }}
+        # note that the pipeline commit is always one BEFORE the commit
+        # that changed this file
+        pipelineCommit: {{ .PipelineCommit }}
+        plumber: {{ .PlumberVersion }}
+        plumberCommit: {{ .PlumberCommit }}
+    spec:
+      containers:
+      - name: {{ .BundleName }}
+        image: {{ .ImageName }}
+        ports:
+        - containerPort: 9800
+          protocol: TCP
+        {{ if .Args }}
+        args:
+          {{ range .Args }}
+          - {{ . }}
+          {{ end }}
+        {{ end }}
