@@ -1,22 +1,10 @@
 package cli
 
 import (
-	"fmt"
 	"github.com/qadium/plumber/shell"
 	"log"
 	"os"
-	"os/user"
 )
-
-// (TODO) break out into separate file?
-func pipelinePath(name string) (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	path := fmt.Sprintf("%s/.plumber/%s", usr.HomeDir, name)
-	return path, nil
-}
 
 func Create(name string) error {
 	// creates a pipeline by initializing a git repo at ~/.plumb/<NAME>
@@ -24,7 +12,9 @@ func Create(name string) error {
 	defer log.Printf("<== Creation complete.")
 
 	log.Printf(" |  Making directory")
-	path, err := pipelinePath(name)
+	// note that we use PipelinePath instead of GetPipeline here; this
+	// is because we only need the path to create it
+	path, err := PipelinePath(name)
 	if err != nil {
 		return err
 	}

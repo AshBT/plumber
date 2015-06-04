@@ -114,7 +114,7 @@ func Bundle(path string) error {
 	defer log.Printf("<== Bundling complete.")
 
 	log.Printf(" |  Parsing bundle config.")
-	ctx, err := parseConfigFromDir(path)
+	ctx, err := ParseConfigFromDir(path)
 	if err != nil {
 		return err
 	}

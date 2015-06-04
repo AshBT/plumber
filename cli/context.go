@@ -23,11 +23,13 @@ type Context struct {
 
 const bundleConfig = ".plumb.yml"
 
-func parseConfigFromDir(path string) (*Context, error) {
-	return parseConfig(fmt.Sprintf("%s/%s", path, bundleConfig))
+// Parse a `.plumb.yml` in the given directory
+func ParseConfigFromDir(path string) (*Context, error) {
+	return ParseConfig(fmt.Sprintf("%s/%s", path, bundleConfig))
 }
 
-func parseConfig(path string) (*Context, error) {
+// Parse the config at the given path
+func ParseConfig(path string) (*Context, error) {
 	ctx := Context{}
 
 	bytes, err := ioutil.ReadFile(path)

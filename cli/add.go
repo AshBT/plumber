@@ -12,13 +12,13 @@ func addOne(pipeline string, bundle string) error {
 	log.Printf(" |  Adding '%s' to '%s'.", bundle, pipeline)
 	defer log.Printf("    Added '%s'.", bundle)
 
-	path, err := pipelinePath(pipeline)
+	path, err := GetPipeline(pipeline)
 	if err != nil {
 		return err
 	}
 
 	log.Printf(" |  Parsing bundle config.")
-	ctx, err := parseConfigFromDir(bundle)
+	ctx, err := ParseConfigFromDir(bundle)
 	log.Printf("    Done.")
 
 	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", ctx.Name)
