@@ -9,7 +9,7 @@ fi
 
 if [[ $1 == "build" || $1 == "install" ]]; then
   # Get the git commit
-  GIT_COMMIT=$(git describe)
+  GIT_COMMIT=$(git describe --tags)
 
   go $1 -v -ldflags "-X main.GitCommit ${GIT_COMMIT}"
 else
