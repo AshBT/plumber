@@ -3,6 +3,7 @@ go:
   - 1.3
   - tip
 before_install:
+  - git fetch --tags
   - openssl aes-256-cbc -K $encrypted_6d2b7347f8c6_key -iv $encrypted_6d2b7347f8c6_iv -in variables.enc -out variables -d
 install:
   - go get -u github.com/jteeuwen/go-bindata/...
