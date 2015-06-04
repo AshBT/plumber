@@ -8,6 +8,8 @@ import (
 
 const plumberDir = ".plumber"
 
+const k8sDir = "k8s"
+
 // Given the `name` of a pipeline, return the path where we should store
 // information about it.
 func PipelinePath(name string) (string, error) {
@@ -31,4 +33,15 @@ func GetPipeline(name string) (string, error) {
 		return "", err
 	}
 	return path, nil
+}
+
+// Given the `name` of a pipeline, return the path where we should store
+// kubernetes YAML files for pods, services, and replication controllers
+func KubernetesPath(name string) (string, error) {
+	path, err := PipelinePath(name)
+	if err != nil {
+		return "", err
+	}
+	k8s := fmt.Sprintf("%s/%s", path, k8sDir)
+	return k8s, nil
 }
