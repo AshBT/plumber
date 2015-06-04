@@ -3,7 +3,7 @@ all: build test
 
 bindata/bindata.go:
 	mkdir -p bindata
-	go-bindata -pkg="bindata" -o=$@ manager
+	go-bindata -pkg="bindata" -o=$@ manager templates
 
 build: bindata/bindata.go
 	./scripts/do.sh build
