@@ -1,7 +1,7 @@
 .PHONY: build all clean test install
 all: build test
 
-bindata/bindata.go:
+bindata/bindata.go: manager/* templates/*
 	mkdir -p bindata
 	go-bindata -pkg="bindata" -o=$@ manager templates
 
