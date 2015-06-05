@@ -6,11 +6,12 @@ import (
 
 type Node struct {
 	Name     string
-	Children []*Node
+	children []*Node
 	dirty    bool
 	visited  bool
 }
 
+// Creates a new node with the given name
 func NewNode(name string) *Node {
 	n := Node{name, nil, false, false}
 	return &n
@@ -35,13 +36,22 @@ func ReverseTopoSort(nodes []*Node) ([]string, error) {
 	return topoSorted, nil
 }
 
+func (n *Node) AddChildren(children... *Node) {
+	n.children = append(n.children, children...)
+}
+
+// TODO: make this accessor read-only somehow
+// func (n *Node) Children() []*Node {
+// 	return n.children
+// }
+
 func (n *Node) visit(result *[]string) error {
 	if n.dirty {
 		return errors.New("Pipeline is not a DAG!")
 	}
 	if !n.visited {
 		n.dirty = true
-		for _, child := range n.Children {
+		for _, child := range n.children {
 			if err := child.visit(result); err != nil {
 				return err
 			}
