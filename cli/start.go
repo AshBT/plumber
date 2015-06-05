@@ -56,7 +56,7 @@ func contextsToGraph(ctxs []*Context) []*graph.Node {
 	for i, ctx := range ctxs {
 		for _, output := range ctx.Outputs {
 			if v, ok := m[output.Name]; ok {
-				nodes[i].Children = append(nodes[i].Children, nodes[v])
+				nodes[i].AddChildren(nodes[v])
 			}
 		}
 	}
@@ -267,15 +267,6 @@ func Start(pipeline, gce, plumberVersion, plumberGitCommit string) error {
 			return err
 		}
 	}
-
-	// graph with diamond (test case)
-	// n1 := graph.NewNode("foo")
-	// n2 := graph.NewNode("bar")
-	// n3 := graph.NewNode("joe")
-	// n4 := graph.NewNode("bob")
-	// n1.Children = append(n1.Children, n2, n3)
-	// n2.Children = append(n2.Children, n4)
-	// n3.Children = append(n3.Children, n4)
 
 	g := contextsToGraph(ctxs)
 	sortedPipeline, err := graph.ReverseTopoSort(g)
