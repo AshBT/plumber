@@ -26,23 +26,27 @@ func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
-		body := r.Body
-		defer body.Close()
+		if r.Body == nil || r.Method != "POST" {
+			http.NotFound(w, r)
+		} else {
+			body := r.Body
+			defer body.Close()
 
-		for _, host := range args {
-			body, err = forwardData(host, body)
+			for _, host := range args {
+				body, err = forwardData(host, body)
+				if err != nil {
+					panic(err)
+				}
+			}
+
+			final, err := ioutil.ReadAll(io.LimitReader(body, 1048576))
 			if err != nil {
 				panic(err)
 			}
-		}
 
-		final, err := ioutil.ReadAll(io.LimitReader(body, 1048576))
-		if err != nil {
-			panic(err)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(final)
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(final)
 	}
 }
 
@@ -53,6 +57,8 @@ func main() {
 	go func() {
 		<-c
 		log.Printf("Received termination; qutting.")
+		// by setting the exit status to 0, we don't cause any parent
+		// processes to think this was an unexpected termination
 		os.Exit(0)
 	}()
 
