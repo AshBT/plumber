@@ -12,7 +12,7 @@ install: bindata/bindata.go
 	./scripts/do.sh install
 
 test: build
-	go test -cover ./...
+	go test -bench=. -cover ./...
 
 clean:
 	@rm bindata/* plumber
