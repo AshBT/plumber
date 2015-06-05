@@ -57,6 +57,12 @@ func Bootstrap() error {
 	if err := writeAsset("Dockerfile", directory); err != nil {
 		return err
 	}
+	if err := writeAsset("README.md", directory); err != nil {
+		return err
+	}
+	if err := writeAsset("manager_test.go", directory); err != nil {
+		return err
+	}
 	log.Printf("    Done")
 
 	if err := shell.RunAndLog("docker",
