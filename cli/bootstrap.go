@@ -6,8 +6,8 @@ import (
 	"github.com/qadium/plumber/shell"
 	"io/ioutil"
 	"log"
-	"os/user"
 	"os"
+	"os/user"
 	// "gopkg.in/yaml.v2"
 )
 

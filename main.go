@@ -83,11 +83,11 @@ pushed to your project's private repository.`,
 			},
 		},
 		{
-			Name:   "start",
-			Usage:  "start a pipeline managed by plumber",
-			Flags:  []cli.Flag {
+			Name:  "start",
+			Usage: "start a pipeline managed by plumber",
+			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "gce",
+					Name:  "gce",
 					Value: "",
 					Usage: "Google Cloud project ID",
 				},

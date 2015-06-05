@@ -130,7 +130,7 @@ func Bundle(path string) error {
 
 	templateCtx := templateContext{
 		Wrapper: wrapper.Name(),
-		Plumber:   ctx,
+		Plumber: ctx,
 	}
 
 	log.Printf(" |  Writing wrapper.")

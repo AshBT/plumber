@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"os/user"
 	"os"
+	"os/user"
 )
 
 const plumberDir = ".plumber"

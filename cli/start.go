@@ -23,22 +23,22 @@ import (
 )
 
 type pipelineInfo struct {
-	path string
-	name string
-	commit string
+	path           string
+	name           string
+	commit         string
 	plumberVersion string
-	plumberCommit string
+	plumberCommit  string
 }
 
 type kubeData struct {
-	BundleName string
+	BundleName     string
 	ExternalFacing bool
-	PipelineName string
+	PipelineName   string
 	PipelineCommit string
 	PlumberVersion string
-	PlumberCommit string
-	ImageName string
-	Args []string
+	PlumberCommit  string
+	ImageName      string
+	Args           []string
 }
 
 func contextsToGraph(ctxs []*Context) []*graph.Node {
@@ -173,20 +173,19 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 
 	args := []string{}
 
-
 	for i := len(sortedPipeline) - 1; i >= 0; i-- {
 		bundleName := sortedPipeline[i]
 		localDockerTag := fmt.Sprintf("plumber/%s", bundleName)
 		remoteDockerTag := fmt.Sprintf("gcr.io/%s/plumber-%s", projectId, bundleName)
-		data := kubeData {
-			BundleName: bundleName,
-			ImageName: remoteDockerTag,
+		data := kubeData{
+			BundleName:     bundleName,
+			ImageName:      remoteDockerTag,
 			PlumberVersion: pipeline.plumberVersion,
-			PlumberCommit: pipeline.plumberCommit,
-			PipelineName: pipeline.name,
+			PlumberCommit:  pipeline.plumberCommit,
+			PipelineName:   pipeline.name,
 			PipelineCommit: pipeline.commit,
 			ExternalFacing: false,
-			Args: []string{},
+			Args:           []string{},
 		}
 
 		// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
@@ -210,15 +209,15 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 		args = append(args, fmt.Sprintf("http://%s:9800", bundleName))
 	}
 	// create the manager service
-	data := kubeData {
-		BundleName: "manager",
-		ImageName: fmt.Sprintf("gcr.io/%s/plumber-manager", projectId),
+	data := kubeData{
+		BundleName:     "manager",
+		ImageName:      fmt.Sprintf("gcr.io/%s/plumber-manager", projectId),
 		PlumberVersion: pipeline.plumberVersion,
-		PlumberCommit: pipeline.plumberCommit,
-		PipelineName: pipeline.name,
+		PlumberCommit:  pipeline.plumberCommit,
+		PipelineName:   pipeline.name,
 		PipelineCommit: pipeline.commit,
 		ExternalFacing: true,
-		Args: args,
+		Args:           args,
 	}
 	// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
 	log.Printf("    Retagging: '%s'", data.BundleName)
@@ -286,7 +285,6 @@ func Start(pipeline, gce, plumberVersion, plumberGitCommit string) error {
 	log.Printf("    Reverse sorted: %v", sortedPipeline)
 	log.Printf("    Completed.")
 
-
 	if gce != "" {
 		// start GOOGLE experiments?
 		// when start is invoked with --gce PROJECT_ID, this piece of code
@@ -323,12 +321,12 @@ func Start(pipeline, gce, plumberVersion, plumberGitCommit string) error {
 
 		// end GOOGLE experiments
 
-		info := pipelineInfo {
-			name: pipeline,
-			path: path,
-			commit: "",
+		info := pipelineInfo{
+			name:           pipeline,
+			path:           path,
+			commit:         "",
 			plumberVersion: plumberVersion,
-			plumberCommit: plumberGitCommit,
+			plumberCommit:  plumberGitCommit,
 		}
 		log.Printf(" |  Running remote pipeline.")
 		return remoteStart(sortedPipeline, gce, info)
