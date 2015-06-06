@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"net"
+	"net/url"
 )
 
 func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
@@ -53,15 +55,32 @@ func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
+	listener, err := net.Listen("tcp", ":9800")
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
 
 	go func() {
 		<-c
 		log.Printf("Received termination; qutting.")
 		// by setting the exit status to 0, we don't cause any parent
 		// processes to think this was an unexpected termination
-		os.Exit(0)
+		listener.Close()
 	}()
 
-	http.HandleFunc("/", createHandler(os.Args[1:]))
-	log.Fatal(http.ListenAndServe(":9800", nil))
+	// sanitize args to make sure they contain valid urls
+	args := []string{}
+	for _, arg := range os.Args[1:] {
+		parsedUrl, err := url.Parse(arg)
+		if err == nil && parsedUrl.Scheme == "http" {
+			args = append(args, arg)
+		} else {
+			log.Printf("'%v' is not a valid url, discarding", arg)
+		}
+	}
+	log.Printf("Forwarding JSONs to '%v'.", args)
+
+	http.HandleFunc("/", createHandler(args))
+	http.Serve(listener, nil)
 }
