@@ -13,7 +13,7 @@ install:
   - go get ./...
 script:
   - make build
-  - $HOME/gopath/bin/goveralls -service=travis-ci
+  - ./scripts/coverage.sh
 notifications:
   slack:
     secure: V9CFftjWKzpbi6F1v24/t43k5ajsNaa/b7kQGjDabH18EYSm5fP07RFBModWtACNgWEL1q1ZBo+pPQQiczMoDI2W/Iac7PUYjzUbiU+lirxeDAukP/WN5yl5nBHqNdQhSeEoacq0RjTdyx0BOaTO/bovpqeao7OlCzo90WtiDX6T18tFsOxs7tGtTHS7u52KHCAEcykB5JaA1B9ZxjksMD7fvkZRMhHud3vK0Ybnh3VqyKVSqCCDZhiHdnUPVl2uXrOyGisVMYKKnDLVBuBA20esQTbDaO9KhlUc4b909GZ2SIeETuVfPWvY6Oj4BwJRZs3MJlUzHpjK8YHCp/tcf17yX0NQVjXNiZ/HHVVbwWO2CboM+5QnwudetNp6Q/5dHg5GFpaGchjHN0hE2eN5G7Y0AoSeIUsD7+52RW8AmhYnoWhTDpcNGfCzafTkLxCcjYi693UDRPR/HZ3TZPI2hAx0s4kv1eau0m8wA2wKELDRHL+rt7j8D1s+GF+JchPIfOJjy0bAdEgasMKVombmA81m/UxAmMCnxBbyx7rsZYYfq0W2UuC5tYnYs1i2LjYwN052fz9E3edw0NtBvrSgrKB/PuD1ZrEQKRHsa/fW0Zh0ofDe6ra3VcmpK81T1loi5BuPILWMQ1lSiQLqihkVkEggiLHVZCgm5JxdB3eDUOg=
