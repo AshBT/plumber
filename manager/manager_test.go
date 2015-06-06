@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"testing"
 	"bytes"
+	"time"
+	"syscall"
 )
 
 // Test that the handler with no args just returns the data sent
@@ -77,6 +79,28 @@ func TestHandlerForwardsData(t *testing.T) {
 	if w.Code != 200 || w.Body.String() != "firstfoo{'foo': 3}" {
 		t.Errorf("Got '%s'; did not get expected response", w.Body.String())
 	}
+}
+
+func TestMainRunnerExitsGracefully(t *testing.T) {
+	// set the interrupt handler to go off after 50 milliseconds
+	go func() {
+		time.Sleep(1*time.Second)
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+	}()
+	go func() {
+		time.Sleep(50*time.Millisecond)
+		resp, err := http.Post("http://localhost:9800", "application/json", bytes.NewBufferString("{'foo': 3}"))
+		if err != nil {
+			t.Error(err)
+		}
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		result := buf.String()
+		if result != "{'foo': 3}" {
+			t.Errorf("Got '%s'; did not get expected response", result)
+		}
+	}()
+	main()
 }
 
 // Benchmark to see how many requests the "empty" handler can handle
