@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 	"os"
+	"fmt"
 )
 
 // config with everything filled out
@@ -45,13 +46,21 @@ language: go
 name: foobar`
 
 // config with missing name on inputs
-const missingInputsAndOutputs = `
+const missingInputName = `
 language: go
 name: foobar
 inputs:
   - type: foo
 outputs:
   - foobar: a`
+
+const missingOutputName = `
+langauge: go
+name: foobar
+outputs:
+	- hello: 1
+inputs:
+	- name: a`
 
 func writeConfig(t *testing.T, config string) string {
 	configFile, err := ioutil.TempFile("", "plumberTest")
@@ -144,10 +153,66 @@ func TestParseMissingFields(t *testing.T) {
 	parseConfig(t, nil, missingFields)
 }
 
-func TestParseMissingInputsAndOutputs(t *testing.T) {
-	parseConfig(t, nil, missingInputsAndOutputs)
+func TestParseMissingInputName(t *testing.T) {
+	parseConfig(t, nil, missingInputName)
+}
+
+func TestParseMissingOutputName(t *testing.T) {
+	parseConfig(t, nil, missingOutputName)
+}
+
+func TestParseMissingLanguage(t *testing.T) {
+	parseConfig(t, nil, `name: hello`)
+}
+
+func TestParseMissingName(t *testing.T) {
+	parseConfig(t, nil, `language: python`)
 }
 
 func TestParseConfigFromDir(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "plumberTest")
+	if err != nil {
+		t.Errorf("Could not make temp dir; got error '%v'", err.Error())
+	}
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Errorf("Had an issue removing the temp file, '%v'", err.Error())
+		}
+	}()
 
+	filename := fmt.Sprintf("%s/.plumb.yml", tempDir)
+
+	if err := ioutil.WriteFile(filename, []byte(goodConfig), 0644); err != nil {
+		t.Errorf("Could not write .plumb.yml; got error '%v'", err.Error())
+	}
+
+	expected := &cli.Context{
+		Language: "python",
+		Name: "foobar",
+		Inputs: []cli.Field{
+			cli.Field{
+				Name: "a",
+				Description: "none",
+				Type: "int",
+			},
+		},
+		Outputs: []cli.Field {
+			cli.Field{
+				Name: "b",
+				Description: "none",
+				Type: "int",
+			},
+		},
+		Env: []string{"SECRET=1234"},
+		Install: []string{"make -j4", "make install"},
+	}
+
+	ctx, err := cli.ParseConfigFromDir(tempDir)
+	if err != nil {
+		t.Errorf("Should have parsed properly, got error '%v'", err.Error())
+	}
+
+	if !reflect.DeepEqual(ctx, expected) {
+		t.Errorf("Got '%v', expected '%v'", ctx, expected)
+	}
 }
