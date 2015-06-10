@@ -31,12 +31,12 @@ func TestGetPipeline(t *testing.T) {
 	expectedPath := fmt.Sprintf("%s/.plumber/you-better-hope-nobody-names-pipelines-this-way", usr.HomeDir)
 	// first, check that we fail with a "no such directory"
 	path, err := cli.GetPipeline("you-better-hope-nobody-names-pipelines-this-way")
-	if err == nil || err.Error() != "stat /Users/echu/.plumber/you-better-hope-nobody-names-pipelines-this-way: no such file or directory" {
-		t.Error("We expected to fail with an error with no such directory, but got '%v' instead", err.Error())
+	if err == nil || err.Error() != fmt.Sprintf("stat %s: no such file or directory", expectedPath) {
+		t.Errorf("We expected to fail with an error with no such directory, but got '%v' instead", err)
 	}
 	// make the expected directory and delete it after this test
 	if err := os.MkdirAll(expectedPath, 0755); err != nil {
-		t.Errorf("Encountered error making test directory '%s': '%v'", expectedPath, err.Error())
+		t.Errorf("Encountered error making test directory '%s': '%v'", expectedPath, err)
 	}
 	defer os.RemoveAll(expectedPath)
 

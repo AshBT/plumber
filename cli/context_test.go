@@ -65,11 +65,11 @@ inputs:
 func writeConfig(t *testing.T, config string) string {
 	configFile, err := ioutil.TempFile("", "plumberTest")
 	if err != nil {
-		t.Errorf("Had an issue creating the temp file to test, '%v'", err.Error())
+		t.Errorf("Had an issue creating the temp file to test, '%v'", err)
 	}
 
 	if _, err := configFile.WriteString(config); err != nil {
-		t.Errorf("Had an error writing the config file to test, '%v'", err.Error())
+		t.Errorf("Had an error writing the config file to test, '%v'", err)
 	}
 
 	return configFile.Name()
@@ -80,7 +80,7 @@ func parseConfig(t *testing.T, expectedContext *cli.Context, config string) {
 	configFile := writeConfig(t, config)
 	defer func() {
 		if err := os.RemoveAll(configFile); err != nil {
-			t.Errorf("Had an issue removing the temp file, '%v'", err.Error())
+			t.Errorf("Had an issue removing the temp file, '%v'", err)
 		}
 	}()
 
@@ -92,7 +92,7 @@ func parseConfig(t *testing.T, expectedContext *cli.Context, config string) {
 		}
 	} else {
 		if err != nil {
-			t.Errorf("Had an issue parsing the config file, '%v'", err.Error())
+			t.Errorf("Had an issue parsing the config file, '%v'", err)
 		}
 
 		if !reflect.DeepEqual(ctx, expectedContext) {
@@ -178,18 +178,18 @@ func TestParseMissingName(t *testing.T) {
 func TestParseConfigFromDir(t *testing.T) {
 	tempDir, err := ioutil.TempDir("", "plumberTest")
 	if err != nil {
-		t.Errorf("Could not make temp dir; got error '%v'", err.Error())
+		t.Errorf("Could not make temp dir; got error '%v'", err)
 	}
 	defer func() {
 		if err := os.RemoveAll(tempDir); err != nil {
-			t.Errorf("Had an issue removing the temp file, '%v'", err.Error())
+			t.Errorf("Had an issue removing the temp file, '%v'", err)
 		}
 	}()
 
 	filename := fmt.Sprintf("%s/.plumb.yml", tempDir)
 
 	if err := ioutil.WriteFile(filename, []byte(goodConfig), 0644); err != nil {
-		t.Errorf("Could not write .plumb.yml; got error '%v'", err.Error())
+		t.Errorf("Could not write .plumb.yml; got error '%v'", err)
 	}
 
 	expected := &cli.Context{
@@ -215,7 +215,7 @@ func TestParseConfigFromDir(t *testing.T) {
 
 	ctx, err := cli.ParseConfigFromDir(tempDir)
 	if err != nil {
-		t.Errorf("Should have parsed properly, got error '%v'", err.Error())
+		t.Errorf("Should have parsed properly, got error '%v'", err)
 	}
 
 	if !reflect.DeepEqual(ctx, expected) {
