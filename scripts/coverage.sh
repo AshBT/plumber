@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "mode: set" > acc.out
 for Dir in $(find ./* -maxdepth 10 -type d );
 do
