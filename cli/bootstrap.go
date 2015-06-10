@@ -25,7 +25,7 @@ func writeAsset(asset string, directory string) error {
 	return nil
 }
 
-func Bootstrap() error {
+func Bootstrap(imageName string) error {
 	// use docker to compile the manager and copy the binary into
 	// another docker container
 	//
@@ -73,7 +73,7 @@ func Bootstrap() error {
 		"-v",
 		fmt.Sprintf("%s:/src", directory),
 		"centurylink/golang-builder",
-		"plumber/manager"); err != nil {
+		imageName); err != nil {
 		return err
 	}
 

@@ -77,7 +77,7 @@ This packages the manager into a minimal container for use on localhost.
 When running the pipeline on Google Cloud, the manager container is
 pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
-				if err := plumber.Bootstrap(); err != nil {
+				if err := plumber.Bootstrap("plumber/manager"); err != nil {
 					panic(err)
 				}
 			},
