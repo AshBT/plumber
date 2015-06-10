@@ -11,7 +11,7 @@ if [[ $1 == "build" || $1 == "install" ]]; then
   # Get the git commit
   GIT_COMMIT=$(git describe --always)
 
-  go $1 -v -ldflags "-X main.GitCommit ${GIT_COMMIT}"
+  go $1 -v -ldflags "-X github.com/qadium/plumber/cli.GitCommit ${GIT_COMMIT}"
 else
   echo "We can only 'build' or 'install': got '$1' instead."
 fi
