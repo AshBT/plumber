@@ -55,12 +55,12 @@ outputs:
   - foobar: a`
 
 const missingOutputName = `
-langauge: go
+language: go
 name: foobar
 outputs:
-	- hello: 1
+  - hello: 1
 inputs:
-	- name: a`
+  - name: a`
 
 func writeConfig(t *testing.T, config string) string {
 	configFile, err := ioutil.TempFile("", "plumberTest")
@@ -165,6 +165,12 @@ func TestParseMissingLanguage(t *testing.T) {
 	parseConfig(t, nil, `name: hello`)
 }
 
+func TestParseMissingOutputs(t *testing.T) {
+	parseConfig(t, nil, `language: python
+name: hello
+inputs:
+  - name: a`)
+}
 func TestParseMissingName(t *testing.T) {
 	parseConfig(t, nil, `language: python`)
 }
