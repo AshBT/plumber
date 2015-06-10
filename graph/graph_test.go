@@ -102,7 +102,7 @@ func TestReverseSortedLoopFail(t *testing.T) {
 }
 
 // Benchmark DAG sorting performance
-func BenchmarkSort(b *testing.B) {
+func BenchmarkSort5(b *testing.B) {
 	n1 := NewNode("foo")
 	n2 := NewNode("bar")
 	n3 := NewNode("joe")
