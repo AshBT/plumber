@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"errors"
 )
 
 type Field struct {
@@ -39,5 +40,37 @@ func ParseConfig(path string) (*Context, error) {
 	if err := yaml.Unmarshal(bytes, &ctx); err != nil {
 		return nil, err
 	}
+
+	if ctx.Language == "" {
+		return nil, errors.New("You must provide a 'language' field.")
+	}
+
+	if ctx.Name == "" {
+		return nil, errors.New("You must provide a 'name' field.")
+	}
+
+	if ctx.Inputs == nil {
+		return nil, errors.New("You must provide 'inputs'.")
+	}
+
+	if ctx.Outputs == nil {
+		return nil, errors.New("You must provide 'outputs'.")
+	}
+
+	// check inputs
+	for _, input := range ctx.Inputs {
+		if input.Name == "" {
+			return nil, errors.New("You must provide a 'name' field for your inputs.")
+		}
+	}
+
+	// check outputs
+	for _, output := range ctx.Outputs {
+		if output.Name == "" {
+			return nil, errors.New("You must provide a 'name' field for your outputs.")
+		}
+	}
+
+
 	return &ctx, nil
 }
