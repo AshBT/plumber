@@ -1,10 +1,10 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"errors"
 )
 
 type Field struct {
@@ -70,7 +70,6 @@ func ParseConfig(path string) (*Context, error) {
 			return nil, errors.New("You must provide a 'name' field for your outputs.")
 		}
 	}
-
 
 	return &ctx, nil
 }

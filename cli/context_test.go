@@ -1,12 +1,12 @@
 package cli_test
 
 import (
+	"fmt"
 	"github.com/qadium/plumber/cli"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
-	"os"
-	"fmt"
 )
 
 // config with everything filled out
@@ -104,46 +104,46 @@ func parseConfig(t *testing.T, expectedContext *cli.Context, config string) {
 func TestParseConfig(t *testing.T) {
 	ctx := &cli.Context{
 		Language: "python",
-		Name: "foobar",
+		Name:     "foobar",
 		Inputs: []cli.Field{
 			cli.Field{
-				Name: "a",
+				Name:        "a",
 				Description: "none",
-				Type: "int",
+				Type:        "int",
 			},
 		},
-		Outputs: []cli.Field {
+		Outputs: []cli.Field{
 			cli.Field{
-				Name: "b",
+				Name:        "b",
 				Description: "none",
-				Type: "int",
+				Type:        "int",
 			},
 		},
-		Env: []string{"SECRET=1234"},
+		Env:     []string{"SECRET=1234"},
 		Install: []string{"make -j4", "make install"},
 	}
 	parseConfig(t, ctx, goodConfig)
 }
 
 func TestParseOptConfig(t *testing.T) {
-	ctx := &cli.Context {
+	ctx := &cli.Context{
 		Language: "python",
-		Name: "foobar",
+		Name:     "foobar",
 		Inputs: []cli.Field{
 			cli.Field{
-				Name: "a",
+				Name:        "a",
 				Description: "",
-				Type: "string",
+				Type:        "string",
 			},
 		},
-		Outputs: []cli.Field {
+		Outputs: []cli.Field{
 			cli.Field{
-				Name: "b",
+				Name:        "b",
 				Description: "",
-				Type: "string",
+				Type:        "string",
 			},
 		},
-		Env: nil,
+		Env:     nil,
 		Install: nil,
 	}
 	parseConfig(t, ctx, optConfig)
@@ -194,22 +194,22 @@ func TestParseConfigFromDir(t *testing.T) {
 
 	expected := &cli.Context{
 		Language: "python",
-		Name: "foobar",
+		Name:     "foobar",
 		Inputs: []cli.Field{
 			cli.Field{
-				Name: "a",
+				Name:        "a",
 				Description: "none",
-				Type: "int",
+				Type:        "int",
 			},
 		},
-		Outputs: []cli.Field {
+		Outputs: []cli.Field{
 			cli.Field{
-				Name: "b",
+				Name:        "b",
 				Description: "none",
-				Type: "int",
+				Type:        "int",
 			},
 		},
-		Env: []string{"SECRET=1234"},
+		Env:     []string{"SECRET=1234"},
 		Install: []string{"make -j4", "make install"},
 	}
 

@@ -1,16 +1,16 @@
 package cli_test
 
 import (
-	"testing"
-	"net/http"
-	"os"
-	"os/exec"
-	"net/url"
-	"strings"
-	"fmt"
 	"bytes"
+	"fmt"
 	"github.com/qadium/plumber/cli"
 	"github.com/qadium/plumber/shell"
+	"net/http"
+	"net/url"
+	"os"
+	"os/exec"
+	"strings"
+	"testing"
 	"time"
 )
 
@@ -28,7 +28,6 @@ func TestBootstrap(t *testing.T) {
 		t.Errorf("Got an error during bootstrap: '%v'", err)
 	}
 	defer shell.RunAndLog("docker", "rmi", "plumber/test-manager")
-
 
 	// step 3. run the image (it *should* just echo in response)
 	if err := shell.RunAndLog("docker", "run", "-d", "-p", "9800:9800", "--name", "plumber-test", "plumber/test-manager"); err != nil {
