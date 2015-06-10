@@ -62,7 +62,7 @@ func TestReverseTopoSortDiamond(t *testing.T) {
 	n2.AddChildren(n4)
 	n3.AddChildren(n4)
 
-	sorted, err := ReverseTopoSort([]*Node{n4,n2,n3,n1})
+	sorted, err := ReverseTopoSort([]*Node{n4, n2, n3, n1})
 	if err != nil {
 		t.Error(err)
 	}
@@ -78,7 +78,7 @@ func TestReverseTopoSortAny(t *testing.T) {
 	n3 := NewNode("baz")
 	n4 := NewNode("bux")
 
-	sorted, err := ReverseTopoSort([]*Node{n4,n2,n3,n1})
+	sorted, err := ReverseTopoSort([]*Node{n4, n2, n3, n1})
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +95,7 @@ func TestReverseSortedLoopFail(t *testing.T) {
 	n1.AddChildren(n2)
 	n2.AddChildren(n1)
 
-	_, err := ReverseTopoSort([]*Node{n1,n2})
+	_, err := ReverseTopoSort([]*Node{n1, n2})
 	if err == nil || err.Error() != "Pipeline is not a DAG!" {
 		t.Error("Expected a DAG error.")
 	}
@@ -114,7 +114,7 @@ func BenchmarkSort5(b *testing.B) {
 	n4.AddChildren(n5)
 
 	for i := 0; i < b.N; i++ {
-		_, err := ReverseTopoSort([]*Node{n5,n4,n2,n3,n1})
+		_, err := ReverseTopoSort([]*Node{n5, n4, n2, n3, n1})
 		if err != nil {
 			b.Error(err)
 		}

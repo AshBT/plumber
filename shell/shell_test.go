@@ -1,12 +1,12 @@
 package shell_test
 
 import (
-	"testing"
-	"syscall"
-	"time"
 	"github.com/qadium/plumber/shell"
-	"log"
 	"io/ioutil"
+	"log"
+	"syscall"
+	"testing"
+	"time"
 )
 
 func TestRunAndLog(t *testing.T) {
@@ -26,7 +26,7 @@ func TestRunAndLogFails(t *testing.T) {
 func TestInterrupt(t *testing.T) {
 	// set the interrupt handler to go off after 50 milliseconds
 	go func() {
-		time.Sleep(50*time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 	}()
 

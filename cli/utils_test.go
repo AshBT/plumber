@@ -1,11 +1,11 @@
 package cli_test
 
 import (
-	"testing"
-	"os"
-	"os/user"
 	"fmt"
 	"github.com/qadium/plumber/cli"
+	"os"
+	"os/user"
+	"testing"
 )
 
 func TestPipelinePath(t *testing.T) {

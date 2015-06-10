@@ -36,7 +36,7 @@ func ReverseTopoSort(nodes []*Node) ([]string, error) {
 	return topoSorted, nil
 }
 
-func (n *Node) AddChildren(children... *Node) {
+func (n *Node) AddChildren(children ...*Node) {
 	n.children = append(n.children, children...)
 }
 

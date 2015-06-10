@@ -1,12 +1,12 @@
 package main
 
 import (
-	"net/http/httptest"
-	"net/http"
-	"testing"
 	"bytes"
-	"time"
+	"net/http"
+	"net/http/httptest"
 	"syscall"
+	"testing"
+	"time"
 )
 
 // Test that the handler with no args just returns the data sent
@@ -53,13 +53,14 @@ func TestHandlerInvalidRequest(t *testing.T) {
 	}
 }
 
-func makeTestHandler(response string) (func(w http.ResponseWriter, r *http.Request)) {
+func makeTestHandler(response string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(r.Body)
 		w.Write([]byte(response + buf.String()))
 	}
 }
+
 // Test that the handler forwards data to servers *in order*
 func TestHandlerForwardsData(t *testing.T) {
 	ts1 := httptest.NewServer(http.HandlerFunc(makeTestHandler("foo")))
@@ -68,7 +69,7 @@ func TestHandlerForwardsData(t *testing.T) {
 	ts2 := httptest.NewServer(http.HandlerFunc(makeTestHandler("first")))
 	defer ts2.Close()
 
-	handler := createHandler([]string{ts1.URL,ts2.URL})
+	handler := createHandler([]string{ts1.URL, ts2.URL})
 	req, err := http.NewRequest("POST", "http://foobar.com", bytes.NewBufferString("{'foo': 3}"))
 	if err != nil {
 		t.Error(err)
@@ -84,11 +85,11 @@ func TestHandlerForwardsData(t *testing.T) {
 func TestMainRunnerExitsGracefully(t *testing.T) {
 	// set the interrupt handler to go off after 50 milliseconds
 	go func() {
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 	}()
 	go func() {
-		time.Sleep(50*time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 		resp, err := http.Post("http://localhost:9800", "application/json", bytes.NewBufferString("{'foo': 3}"))
 		if err != nil {
 			t.Error(err)

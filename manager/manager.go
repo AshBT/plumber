@@ -4,11 +4,11 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
-	"net"
-	"net/url"
 )
 
 func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
