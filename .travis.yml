@@ -8,6 +8,8 @@ before_install:
   - go get github.com/mattn/goveralls
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 install:
+  - alias gcloud=true
+  - alias kubectl=true
   - curl -sLo - http://j.mp/install-travis-docker | sh -xe
   - go get -u github.com/jteeuwen/go-bindata/...
   - make bindata/bindata.go
