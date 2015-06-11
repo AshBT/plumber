@@ -13,7 +13,7 @@ type Field struct {
 	Type        string
 }
 
-type Context struct {
+type Bundle struct {
 	Language string
 	Name     string
 	Inputs   []Field  `yaml:",flow"`
@@ -25,13 +25,13 @@ type Context struct {
 const bundleConfig = ".plumb.yml"
 
 // Parse a `.plumb.yml` in the given directory
-func ParseConfigFromDir(path string) (*Context, error) {
-	return ParseConfig(fmt.Sprintf("%s/%s", path, bundleConfig))
+func ParseBundleFromDir(path string) (*Bundle, error) {
+	return ParseBundle(fmt.Sprintf("%s/%s", path, bundleConfig))
 }
 
 // Parse the config at the given path
-func ParseConfig(path string) (*Context, error) {
-	ctx := Context{}
+func ParseBundle(path string) (*Bundle, error) {
+	ctx := Bundle{}
 
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
