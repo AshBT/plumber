@@ -3,7 +3,6 @@ package cli_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/qadium/plumber/cli"
 	"github.com/qadium/plumber/shell"
 	"net/http"
 	"net/url"
@@ -19,18 +18,21 @@ import (
 // and checking that the container is built and runs
 
 func TestBootstrap(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	defer cleanTestDir(t, tempDir)
+
 	// step 1. remove any image named plumber/test-manager from the current
 	// set of docker images (ignore any errors)
-	_ = shell.RunAndLog("docker", "rmi", "plumber/test-manager")
+	_ = shell.RunAndLog("docker", "rmi", ctx.Image)
 
-	// step 2. invoke Bootstrap for building "plumber/test-manager"
-	if err := cli.Bootstrap("plumber/test-manager"); err != nil {
+	// step 2. invoke Bootstrap for building ctx.Image
+	if err := ctx.Bootstrap(); err != nil {
 		t.Errorf("Got an error during bootstrap: '%v'", err)
 	}
-	defer shell.RunAndLog("docker", "rmi", "plumber/test-manager")
+	defer shell.RunAndLog("docker", "rmi", ctx.Image)
 
 	// step 3. run the image (it *should* just echo in response)
-	if err := shell.RunAndLog("docker", "run", "-d", "-p", "9800:9800", "--name", "plumber-test", "plumber/test-manager"); err != nil {
+	if err := shell.RunAndLog("docker", "run", "-d", "-p", "9800:9800", "--name", "plumber-test", ctx.Image); err != nil {
 		t.Errorf("Got an error during docker run: '%v'", err)
 	}
 	defer shell.RunAndLog("docker", "rm", "-f", "plumber-test")
