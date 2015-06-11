@@ -11,7 +11,7 @@ import (
 
 type templateContext struct {
 	Wrapper string
-	Plumber *Context
+	Plumber *Bundle
 }
 
 // A Dockerfile template for python bundles. We'll make sure this is
@@ -109,16 +109,16 @@ func removeTempFile(f *os.File) {
 	}
 }
 
-func Bundle(path string) error {
+func (ctx *Context) Bundle(path string) error {
 	log.Printf("==> Creating bundle from '%s'", path)
 	defer log.Printf("<== Bundling complete.")
 
 	log.Printf(" |  Parsing bundle config.")
-	ctx, err := ParseConfigFromDir(path)
+	bundleConfig, err := ParseBundleFromDir(path)
 	if err != nil {
 		return err
 	}
-	log.Printf("    %v", ctx)
+	log.Printf("    %v", bundleConfig)
 
 	log.Printf(" |  Making temp file for python wrapper")
 	wrapper, err := ioutil.TempFile(path, "plumber")
@@ -130,7 +130,7 @@ func Bundle(path string) error {
 
 	templateCtx := templateContext{
 		Wrapper: wrapper.Name(),
-		Plumber: ctx,
+		Plumber: bundleConfig,
 	}
 
 	log.Printf(" |  Writing wrapper.")
@@ -162,11 +162,11 @@ func Bundle(path string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Building container.")
-	imageName := fmt.Sprintf("plumber/%s", ctx.Name)
+	imageName := fmt.Sprintf("plumber/%s", bundleConfig.Name)
 	err = shell.RunAndLog("docker", "build", "--pull", "-t", imageName, "-f", dockerfile.Name(), path)
 	if err != nil {
 		return err
 	}
-	log.Printf("    Container 'plumber/%s' built.", ctx.Name)
+	log.Printf("    Container 'plumber/%s' built.", bundleConfig.Name)
 	return nil
 }

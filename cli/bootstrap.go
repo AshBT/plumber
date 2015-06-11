@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/user"
 	// "gopkg.in/yaml.v2"
 )
 
@@ -25,7 +24,7 @@ func writeAsset(asset string, directory string) error {
 	return nil
 }
 
-func Bootstrap(imageName string) error {
+func (ctx *Context) Bootstrap() error {
 	// use docker to compile the manager and copy the binary into
 	// another docker container
 	//
@@ -34,33 +33,27 @@ func Bootstrap(imageName string) error {
 	defer log.Printf("<== Bootstrap complete.")
 
 	log.Printf(" |  Creating temp directory.")
-	usr, err := user.Current()
-	if err != nil {
-		return err
-	}
-	directory := fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir)
-
-	if err := os.MkdirAll(directory, 0755); err != nil {
+	if err := os.MkdirAll(ctx.BootstrapDir, 0755); err != nil {
 		return err
 	}
 	defer func() {
-		if err := os.RemoveAll(directory); err != nil {
+		if err := os.RemoveAll(ctx.BootstrapDir); err != nil {
 			panic(err)
 		}
 	}()
-	log.Printf("    Temp directory created at '%s'", directory)
+	log.Printf("    Temp directory created at '%s'", ctx.BootstrapDir)
 
 	log.Printf(" |  Writing manager source files.")
-	if err := writeAsset("manager.go", directory); err != nil {
+	if err := writeAsset("manager.go", ctx.BootstrapDir); err != nil {
 		return err
 	}
-	if err := writeAsset("Dockerfile", directory); err != nil {
+	if err := writeAsset("Dockerfile", ctx.BootstrapDir); err != nil {
 		return err
 	}
-	if err := writeAsset("README.md", directory); err != nil {
+	if err := writeAsset("README.md", ctx.BootstrapDir); err != nil {
 		return err
 	}
-	if err := writeAsset("manager_test.go", directory); err != nil {
+	if err := writeAsset("manager_test.go", ctx.BootstrapDir); err != nil {
 		return err
 	}
 	log.Printf("    Done")
@@ -71,9 +64,9 @@ func Bootstrap(imageName string) error {
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
 		"-v",
-		fmt.Sprintf("%s:/src", directory),
+		fmt.Sprintf("%s:/src", ctx.BootstrapDir),
 		"centurylink/golang-builder",
-		imageName); err != nil {
+		ctx.Image); err != nil {
 		return err
 	}
 

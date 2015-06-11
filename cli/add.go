@@ -8,22 +8,22 @@ import (
 	"log"
 )
 
-func addOne(pipeline string, bundle string) error {
+func addOne(ctx *Context, pipeline string, bundle string) error {
 	log.Printf(" |  Adding '%s' to '%s'.", bundle, pipeline)
 	defer log.Printf("    Added '%s'.", bundle)
 
-	path, err := GetPipeline(pipeline)
+	path, err := ctx.GetPipeline(pipeline)
 	if err != nil {
 		return err
 	}
 
 	log.Printf(" |  Parsing bundle config.")
-	ctx, err := ParseConfigFromDir(bundle)
+	bundleConfig, err := ParseBundleFromDir(bundle)
 	log.Printf("    Done.")
 
-	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", ctx.Name)
-	config := fmt.Sprintf("%s/%s.yml", path, ctx.Name)
-	bytes, err := yaml.Marshal(&ctx)
+	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", bundleConfig.Name)
+	config := fmt.Sprintf("%s/%s.yml", path, bundleConfig.Name)
+	bytes, err := yaml.Marshal(&bundleConfig)
 	if err != nil {
 		return err
 	}
@@ -33,13 +33,13 @@ func addOne(pipeline string, bundle string) error {
 	}
 	log.Printf("    Done.")
 
-	log.Printf(" |  Adding `%s.yml` to version control.", ctx.Name)
+	log.Printf(" |  Adding `%s.yml` to version control.", bundleConfig.Name)
 
 	if err := shell.RunAndLog("git", "-C", path, "add", config); err != nil {
 		return err
 	}
 
-	message := fmt.Sprintf("Updated '%s' config.", ctx.Name)
+	message := fmt.Sprintf("Updated '%s' config.", bundleConfig.Name)
 	if err := shell.RunAndLog("git", "-C", path, "commit", "-m", message, "--author", "\"Plumber Bot <plumber@qadium.com>\""); err != nil {
 		return err
 	}
@@ -47,12 +47,12 @@ func addOne(pipeline string, bundle string) error {
 	return nil
 }
 
-func Add(pipeline string, bundles ...string) error {
+func (ctx *Context) Add(pipeline string, bundles ...string) error {
 	log.Printf("==> Adding '%v' to '%s' pipeline", bundles, pipeline)
 	defer log.Printf("<== Adding complete.")
 
 	for _, bundle := range bundles {
-		addOne(pipeline, bundle)
+		addOne(ctx, pipeline, bundle)
 	}
 
 	return nil

@@ -26,8 +26,6 @@ type pipelineInfo struct {
 	path           string
 	name           string
 	commit         string
-	plumberVersion string
-	plumberCommit  string
 }
 
 type kubeData struct {
@@ -41,20 +39,20 @@ type kubeData struct {
 	Args           []string
 }
 
-func contextsToGraph(ctxs []*Context) []*graph.Node {
-	nodes := make([]*graph.Node, len(ctxs))
+func bundlesToGraphs(bundles []*Bundle) []*graph.Node {
+	nodes := make([]*graph.Node, len(bundles))
 	m := make(map[string]int) // this map maps inputs to the index of the
 	// node that uses it
 	// build a map to create the DAG
-	for i, ctx := range ctxs {
-		nodes[i] = graph.NewNode(ctx.Name)
-		for _, input := range ctx.Inputs {
+	for i, bundle := range bundles {
+		nodes[i] = graph.NewNode(bundle.Name)
+		for _, input := range bundle.Inputs {
 			m[input.Name] = i
 		}
 	}
 
-	for i, ctx := range ctxs {
-		for _, output := range ctx.Outputs {
+	for i, bundle := range bundles {
+		for _, output := range bundle.Outputs {
 			if v, ok := m[output.Name]; ok {
 				nodes[i].AddChildren(nodes[v])
 			}
@@ -134,15 +132,12 @@ func writeKubernetesTemplate(tmplType string, destFilename string, templateData 
 	return nil
 }
 
-func writeKubernetesFiles(templateData kubeData) error {
+func writeKubernetesFiles(ctx *Context, templateData kubeData) error {
 	log.Printf(" |     Writing '%s'", templateData.BundleName)
-	k8s, err := KubernetesPath(templateData.PipelineName)
-	if err != nil {
-		return err
-	}
+	k8s := ctx.KubernetesPath(templateData.PipelineName)
 
 	log.Printf("       Creating service file.")
-	err = writeKubernetesTemplate("service", fmt.Sprintf("%s/%s.yaml", k8s, templateData.BundleName), templateData)
+	err := writeKubernetesTemplate("service", fmt.Sprintf("%s/%s.yaml", k8s, templateData.BundleName), templateData)
 	if err != nil {
 		return err
 	}
@@ -158,13 +153,10 @@ func writeKubernetesFiles(templateData kubeData) error {
 	return nil
 }
 
-func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInfo) error {
+func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeline pipelineInfo) error {
 	// we can probably get the project name with google cloud SDK
 	log.Printf("   Creating 'k8s' directory...")
-	k8s, err := KubernetesPath(pipeline.name)
-	if err != nil {
-		return err
-	}
+	k8s := ctx.KubernetesPath(pipeline.name)
 
 	if err := os.MkdirAll(k8s, 0755); err != nil {
 		return err
@@ -180,8 +172,8 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 		data := kubeData{
 			BundleName:     bundleName,
 			ImageName:      remoteDockerTag,
-			PlumberVersion: pipeline.plumberVersion,
-			PlumberCommit:  pipeline.plumberCommit,
+			PlumberVersion: ctx.Version,
+			PlumberCommit:  ctx.GitCommit,
 			PipelineName:   pipeline.name,
 			PipelineCommit: pipeline.commit,
 			ExternalFacing: false,
@@ -201,7 +193,7 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 			return err
 		}
 		// step 3. generate k8s files in pipelinePath
-		if err := writeKubernetesFiles(data); err != nil {
+		if err := writeKubernetesFiles(ctx, data); err != nil {
 			return err
 		}
 
@@ -212,8 +204,8 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 	data := kubeData{
 		BundleName:     "manager",
 		ImageName:      fmt.Sprintf("gcr.io/%s/plumber-manager", projectId),
-		PlumberVersion: pipeline.plumberVersion,
-		PlumberCommit:  pipeline.plumberCommit,
+		PlumberVersion: ctx.Version,
+		PlumberCommit:  ctx.GitCommit,
 		PipelineName:   pipeline.name,
 		PipelineCommit: pipeline.commit,
 		ExternalFacing: true,
@@ -221,7 +213,7 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 	}
 	// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
 	log.Printf("    Retagging: '%s'", data.BundleName)
-	err = shell.RunAndLog("docker", "tag", "-f", "plumber/manager", data.ImageName)
+	err := shell.RunAndLog("docker", "tag", "-f", "plumber/manager", data.ImageName)
 	if err != nil {
 		return err
 	}
@@ -232,7 +224,7 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 		return err
 	}
 	// step 3. generate k8s file in pipeline
-	if err := writeKubernetesFiles(data); err != nil {
+	if err := writeKubernetesFiles(ctx, data); err != nil {
 		return err
 	}
 
@@ -245,12 +237,12 @@ func remoteStart(sortedPipeline []string, projectId string, pipeline pipelineInf
 	return nil
 }
 
-func Start(pipeline, gce, plumberVersion, plumberGitCommit string) error {
+func (ctx *Context) Start(pipeline, gce string) error {
 	log.Printf("==> Starting '%s' pipeline", pipeline)
 	defer log.Printf("<== '%s' finished.", pipeline)
 
 	log.Printf(" |  Building dependency graph.")
-	path, err := GetPipeline(pipeline)
+	path, err := ctx.GetPipeline(pipeline)
 	if err != nil {
 		return err
 	}
@@ -260,15 +252,15 @@ func Start(pipeline, gce, plumberVersion, plumberGitCommit string) error {
 		return err
 	}
 
-	ctxs := make([]*Context, len(configs))
+	ctxs := make([]*Bundle, len(configs))
 	for i, config := range configs {
-		ctxs[i], err = ParseConfig(config)
+		ctxs[i], err = ParseBundle(config)
 		if err != nil {
 			return err
 		}
 	}
 
-	g := contextsToGraph(ctxs)
+	g := bundlesToGraphs(ctxs)
 	sortedPipeline, err := graph.ReverseTopoSort(g)
 	if err != nil {
 		return err
@@ -316,11 +308,9 @@ func Start(pipeline, gce, plumberVersion, plumberGitCommit string) error {
 			name:           pipeline,
 			path:           path,
 			commit:         "",
-			plumberVersion: plumberVersion,
-			plumberCommit:  plumberGitCommit,
 		}
 		log.Printf(" |  Running remote pipeline.")
-		return remoteStart(sortedPipeline, gce, info)
+		return remoteStart(ctx, sortedPipeline, gce, info)
 	} else {
 		log.Printf(" |  Running local pipeline.")
 		return localStart(sortedPipeline)
