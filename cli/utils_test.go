@@ -3,10 +3,10 @@ package cli_test
 import (
 	"fmt"
 	"github.com/qadium/plumber/cli"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"testing"
-	"io/ioutil"
 )
 
 const testPlumberDir = "foo"

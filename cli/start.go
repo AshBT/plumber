@@ -23,9 +23,9 @@ import (
 )
 
 type pipelineInfo struct {
-	path           string
-	name           string
-	commit         string
+	path   string
+	name   string
+	commit string
 }
 
 type kubeData struct {
@@ -305,9 +305,9 @@ func (ctx *Context) Start(pipeline, gce string) error {
 		// end GOOGLE experiments
 
 		info := pipelineInfo{
-			name:           pipeline,
-			path:           path,
-			commit:         "",
+			name:   pipeline,
+			path:   path,
+			commit: "",
 		}
 		log.Printf(" |  Running remote pipeline.")
 		return remoteStart(ctx, sortedPipeline, gce, info)

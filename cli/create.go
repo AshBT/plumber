@@ -14,7 +14,7 @@ func (ctx *Context) Create(name string) error {
 	log.Printf(" |  Making directory")
 	// note that we use PipelinePath instead of GetPipeline here; this
 	// is because we only need the path to create it
-	path:= ctx.PipelinePath(name)
+	path := ctx.PipelinePath(name)
 
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return err

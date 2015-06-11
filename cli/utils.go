@@ -8,12 +8,12 @@ import (
 
 // Useful information for the plumber CLI tool goes here
 type Context struct {
-	PipeDir 	string	// the directory to store plumber pipelines
-	KubeSuffix 	string	// the suffix to use to store kubernetes files
-	GitCommit	string	// the current git commit
-	Version		string 	// the current version
-	Image		string	// the desired image name
-	BootstrapDir string	// the directory to use for bootstrapping
+	PipeDir      string // the directory to store plumber pipelines
+	KubeSuffix   string // the suffix to use to store kubernetes files
+	GitCommit    string // the current git commit
+	Version      string // the current version
+	Image        string // the desired image name
+	BootstrapDir string // the directory to use for bootstrapping
 }
 
 const plumberDir = ".plumber"
@@ -44,7 +44,6 @@ func NewDefaultContext() (*Context, error) {
 	}
 	return d, nil
 }
-
 
 // Given the `name` of a pipeline, return the path where we should store
 // information about it.
