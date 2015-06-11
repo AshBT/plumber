@@ -12,7 +12,9 @@ install: bindata/bindata.go
 	./scripts/do.sh install
 
 test: build
-	go test -bench=. -cover ./...
+	alias gcloud=true
+	alias kubectl=true
+	go test -v -bench=. -cover ./...
 
 clean:
 	@rm bindata/* plumber
