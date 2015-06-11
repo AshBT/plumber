@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
 export NEO4J_TEST_DIRECTORY="neo4j-test"

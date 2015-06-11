@@ -43,9 +43,9 @@ with warnings.catch_warnings():
     try:
         #with connection.cursor() as cursor:
         cursor=connection.cursor()
-        sql = "SELECT * from ads LIMIT 1000"
+        sql = "SELECT * from ads"
         cursor.execute(sql)
-        for result in cursor:
+        for i, result in enumerate(cursor):
             # fix some bad unicode encodings
             for k in result:
                 if isinstance(result[k], unicode):
@@ -57,6 +57,6 @@ with warnings.catch_warnings():
 
             t1 = time.time()
 
-            print("Elapsed", (t1 - t0), "seconds")
+            print "%09d: Elapsed" % i, (t1 - t0), "seconds"
     finally:
         connection.close()

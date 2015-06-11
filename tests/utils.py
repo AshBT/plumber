@@ -24,6 +24,7 @@ class Runner(object):
                 # comparing "tweets" which may change over time.
 
     def check_ad_equals_expected(self, test_node, expected, ignore_fields=[]):
+        enhancer = None
         try:
             enhancer = self.ENHANCER()
             enhancer.db.create(Node("Ad", **test_node))
@@ -53,7 +54,8 @@ class Runner(object):
                     b.sort()
                 nose.tools.eq_(a, b)
         finally:
-            enhancer.db.delete_all()
+            if enhancer is not None:
+                enhancer.db.delete_all()
 
     def test_run(self):
         # Populates the DB one by one and runs the enhancer on it.
