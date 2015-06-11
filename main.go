@@ -31,15 +31,18 @@ func atLeast(num int) func(args cli.Args) bool {
 }
 
 func main() {
-	versionString := versionString()
+	plumberCtx, err := plumber.NewDefaultContext()
+	if err != nil {
+		panic(err)
+	}
 	app := cli.NewApp()
 	app.Name = "plumber"
 	app.Usage = "a command line tool for managing distributed data pipelines"
-	app.Version = versionString
+	app.Version = plumberCtx.Version
 	// app.Flags = []cli.Flag{
 	// 	cli.StringFlag{
 	// 		Name:   "server, s",
-	// 		Value:  "/var/run/plumber.sock",
+	// 		Value:  "/var/run/plumberCtx.sock",
 	// 		Usage:  "location of plumber server socket",
 	// 		EnvVar: "LINK_SERVER",
 	// 	},
@@ -52,7 +55,7 @@ func main() {
 			Action: func(c *cli.Context) {
 				pipeline := c.Args()[0]
 				bundles := c.Args()[1:]
-				if err := plumber.Add(pipeline, bundles...); err != nil {
+				if err := plumberCtx.Add(pipeline, bundles...); err != nil {
 					panic(err)
 				}
 			},
@@ -63,7 +66,7 @@ func main() {
 			Before: createRequiredArgCheck(exactly(1), "Please provide a pipeline name."),
 			Action: func(c *cli.Context) {
 				path := c.Args().First()
-				if err := plumber.Create(path); err != nil {
+				if err := plumberCtx.Create(path); err != nil {
 					panic(err)
 				}
 			},
@@ -71,13 +74,13 @@ func main() {
 		{
 			Name:  "bootstrap",
 			Usage: "bootstrap local setup for use with plumber",
-			Description: `The bootstrap command builds the latest manager for use with plumber.
+			Description: `The bootstrap command builds the latest manager for use with plumberCtx.
 This packages the manager into a minimal container for use on localhost.
 
 When running the pipeline on Google Cloud, the manager container is
 pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
-				if err := plumber.Bootstrap("plumber/manager"); err != nil {
+				if err := plumberCtx.Bootstrap(); err != nil {
 					panic(err)
 				}
 			},
@@ -96,7 +99,7 @@ pushed to your project's private repository.`,
 			Action: func(c *cli.Context) {
 				pipeline := c.Args().First()
 				gce := c.String("gce")
-				if err := plumber.Start(pipeline, gce, versionString, GitCommit); err != nil {
+				if err := plumberCtx.Start(pipeline, gce); err != nil {
 					panic(err)
 				}
 			},
@@ -107,7 +110,7 @@ pushed to your project's private repository.`,
 			Before: createRequiredArgCheck(exactly(1), "Please provide a bundle path."),
 			Action: func(c *cli.Context) {
 				path := c.Args().First()
-				if err := plumber.Bundle(path); err != nil {
+				if err := plumberCtx.Bundle(path); err != nil {
 					panic(err)
 				}
 			},
@@ -116,18 +119,10 @@ pushed to your project's private repository.`,
 			Name:  "version",
 			Usage: "more detailed version information for plumber",
 			Action: func(c *cli.Context) {
-				fmt.Println("plumber version:", versionString)
-				fmt.Println("git commit:", GitCommit)
+				fmt.Println("plumber version:", plumberCtx.Version)
+				fmt.Println("git commit:", plumberCtx.GitCommit)
 			},
 		},
 	}
 	app.Run(os.Args)
-}
-
-func versionString() string {
-	versionString := Version
-	if VersionPrerelease != "" {
-		versionString += "-" + VersionPrerelease
-	}
-	return versionString
 }
