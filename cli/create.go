@@ -4,6 +4,7 @@ import (
 	"github.com/qadium/plumber/shell"
 	"log"
 	"os"
+	"errors"
 )
 
 func (ctx *Context) Create(name string) error {
@@ -11,10 +12,19 @@ func (ctx *Context) Create(name string) error {
 	log.Printf("==> Creating '%s' pipeline", name)
 	defer log.Printf("<== Creation complete.")
 
+	if name == "" {
+		return errors.New("Cannot create a pipeline with no name.")
+	}
+
 	log.Printf(" |  Making directory")
 	// note that we use PipelinePath instead of GetPipeline here; this
 	// is because we only need the path to create it
 	path := ctx.PipelinePath(name)
+
+	// if the path already exists, give an error
+	if _, err := os.Stat(path); err == nil {
+		return errors.New("Pipeline already exists.")
+	}
 
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return err
