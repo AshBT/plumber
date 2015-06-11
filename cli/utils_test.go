@@ -91,3 +91,22 @@ func TestKubernetesPath(t *testing.T) {
 		t.Error("KubernetesPath: did not return expected path.")
 	}
 }
+
+func TestDefaultContext(t *testing.T) {
+	usr, err := user.Current()
+	if err != nil {
+		t.Errorf("DefaultContext: Got an error getting current user: '%v'", err)
+	}
+
+	ctx, err := cli.NewDefaultContext()
+	if err != nil {
+		t.Errorf("DefaultContext: Got error '%v'", err)
+	}
+
+	if ctx.PipeDir != fmt.Sprintf("%s/.plumber", usr.HomeDir) ||
+		ctx.KubeSuffix != "k8s" || ctx.Image != "plumber/manager" ||
+		ctx.BootstrapDir != fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir) {
+		t.Errorf("DefaultContext: '%v' was not expected.", ctx)
+	}
+
+}
