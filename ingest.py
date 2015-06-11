@@ -6,6 +6,8 @@ import warnings
 from py2neo import Graph, Node, Relationship, watch, GraphError
 import pymysql.cursors
 import ftfy
+import gevent
+import gevent.queue
 
 SQL_USER = os.environ['SQL_USER']
 SQL_PASS = os.environ['SQL_PASS']
@@ -29,6 +31,40 @@ except GraphError as e:
     print(e)
     pass
 
+# add 100 at a time
+batch_size = 100
+workers = 8
+
+# work queue for passing data around
+work_queue = gevent.queue.Queue(maxsize=batch_size * workers)
+
+def collect_ads(gid):
+    nodes = []
+    t0 = time.time()
+    i = 0
+
+    while True:
+        ad = work_queue.get()
+        i += 1
+        if ad == "!!STOP!!":
+            graph.create(*nodes)
+            t1 = time.time()
+            print "[Greenlet %02d] %09d: Elapsed" % (gid, i), (t1 - t0), "seconds"
+            break
+        else:
+            nodes.append(ad)
+
+        if len(nodes) == batch_size:
+            graph.create(*nodes)
+            t1 = time.time()
+            nodes = []
+            print "[Greenlet %02d] %09d: Elapsed" % (gid, i), (t1 - t0), "seconds"
+            t0 = time.time()
+            i = 0
+        gevent.sleep(0)
+
+threads = map(lambda x: gevent.spawn(collect_ads,x), range(workers))
+
 with warnings.catch_warnings():
     warnings.simplefilter("once")
     connection = pymysql.connect(host=SQL_HOST,
@@ -39,24 +75,24 @@ with warnings.catch_warnings():
             charset='utf8')
 
     count = 0
+
     watch("httpstream")
     try:
-        #with connection.cursor() as cursor:
         cursor=connection.cursor()
-        sql = "SELECT * from ads"
+        sql = "SELECT * from ads ORDER BY posttime DESC LIMIT 10000"
         cursor.execute(sql)
+
         for i, result in enumerate(cursor):
             # fix some bad unicode encodings
             for k in result:
                 if isinstance(result[k], unicode):
                     result[k] = ftfy.fix_encoding(result[k])
-            print(result)
-            t0 = time.time()
-            ad_node = Node("Ad", "Datum", **result)
-            graph.create(ad_node)
-
-            t1 = time.time()
-
-            print "%09d: Elapsed" % i, (t1 - t0), "seconds"
+            # put result into work queue
+            #print(result)
+            work_queue.put(Node("Ad", "Datum", **result))
     finally:
+        # send the stop signal to all workers
+        for _ in range(workers):
+            work_queue.put("!!STOP!!")
+        gevent.joinall(threads)
         connection.close()
