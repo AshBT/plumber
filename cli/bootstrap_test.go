@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/qadium/plumber/shell"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -11,8 +13,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"io/ioutil"
-	"log"
 )
 
 // this is a *functional test*

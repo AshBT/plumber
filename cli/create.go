@@ -1,10 +1,10 @@
 package cli
 
 import (
+	"errors"
 	"github.com/qadium/plumber/shell"
 	"log"
 	"os"
-	"errors"
 )
 
 func (ctx *Context) Create(name string) error {

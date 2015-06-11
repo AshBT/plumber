@@ -1,11 +1,11 @@
 package cli_test
 
 import (
-	"testing"
 	"fmt"
-	"os"
 	"io/ioutil"
 	"log"
+	"os"
+	"testing"
 )
 
 func TestCreate(t *testing.T) {
@@ -62,6 +62,7 @@ func TestExistingCreate(t *testing.T) {
 	}
 
 }
+
 // path, err := PipelinePath(name)
 // if err != nil {
 // 	return "", err
