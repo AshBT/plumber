@@ -79,7 +79,7 @@ with warnings.catch_warnings():
     watch("httpstream")
     try:
         cursor=connection.cursor()
-        sql = "SELECT * from ads ORDER BY posttime DESC LIMIT 10000"
+        sql = "SELECT * from ads ORDER BY id DESC LIMIT 10000"
         cursor.execute(sql)
 
         for i, result in enumerate(cursor):
