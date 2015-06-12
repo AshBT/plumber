@@ -48,16 +48,17 @@ class Instagram(enhancer.Enhancer):
 			node['escaped_text'] = text
 
 			expression = re.compile('instagram\s*:?\s*[^\s]*',re.IGNORECASE)
+			instagram_user_name = None
 			try:
-				raw = re.findall(expression,text)[0]
-				instagram_user_name = None
-				if '/' in raw:
-					instagram_user_name = raw.split('/')[-1].strip()
-				elif ':' in raw:
-					instagram_user_name = raw.split(':')[-1].strip()
+				regexp_match = re.findall(expression,text)
+				if len(regexp_match) > 0:
+					raw = regexp_match[0]
+					if '/' in raw:
+						instagram_user_name = raw.split('/')[-1].strip()
+					elif ':' in raw:
+						instagram_user_name = raw.split(':')[-1].strip()
+			finally:
 				return instagram_user_name
-			except Exception as e:
-				log.error(e)
 		return None
 
 	def get_instagram_id(self,instagram_user_name):

@@ -12,7 +12,7 @@ class Attributer(enhancer.SQLEnhancer):
 
     def enhance(self, node):
         # this makes a db query for each node
-        cursor = self.connection.cursor()
+        #cursor = self.connection.cursor()
         sql = "SELECT attribute, value from ads_attributes WHERE ads_id=%s"
         # use a set to keep unique values
         datum = collections.defaultdict(set)

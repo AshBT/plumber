@@ -29,15 +29,17 @@ class Enhancer(object):
 	def cleanup(self):
 		pass
 
-	def run(self, batch_size=100, skip_on_error=True):
+	def run(self, start=0, stop=None, batch_size=100, skip_on_error=True):
 		""" This grabs 100 nodes at a time and process them in memory
 			before moving on to the next 100, until there are no more
 			nodes left.
 		"""
 		try:
 			counter = 0
+			nodes = []
+			stop_now = False
 			while True:
-				result = self.db.cypher.execute('MATCH (ad:Ad) RETURN ad SKIP %d LIMIT %d' % (counter, batch_size))
+				result = self.db.cypher.execute('MATCH (ad:Ad) RETURN ad SKIP %d LIMIT %d' % (counter + start, batch_size))
 				for record in result:
 					if counter % 10 == 0:
 						log.info("Handled %d records." % counter)
@@ -54,7 +56,7 @@ class Enhancer(object):
 							elem = node.properties[p]
 							if isinstance(elem, list) and not elem:
 								node.properties[p] = ""
-						node.push()			# push any changes to the server
+						nodes.append(node)
 						log.debug("<== %s" % str(node))
 					except Exception as e:
 						log.error("[Exception] Skipping record; caught an exception during handling: '%s'" % e)
@@ -64,7 +66,15 @@ class Enhancer(object):
 						else:
 							raise e
 
-				if len(result) < batch_size:
+					if stop is not None:
+						if counter >= (stop - start):
+							stop_now = True
+							break
+							
+				self.db.push(*nodes)
+				node = []
+
+				if stop_now or len(result) < batch_size:
 					# if the number of returned results is less than the
 					# batch size, then we now we've exhausted all nodes
 					log.info("Finished!")

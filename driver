@@ -4,9 +4,6 @@ import sys
 import logging
 import inspect
 import textwrap
-import os
-import py2neo
-import subprocess
 # the import fails when our environment variables aren't properly set
 try:
     import plugins.enhancer
@@ -51,39 +48,46 @@ available enhancers:
         """.format(enhancers="\n  ".join(enhancer_list))), epilog="Happy enhancing!")
     parser.add_argument("enhancer", nargs='+', help="a list of enhancers to run over the data")
     parser.add_argument("-v", "--verbosity", action="count", default=0, help="increase output verbosity")
+    parser.add_argument("--start", type=int, default=0, help="which row to start")
+    parser.add_argument("--stop", type=int, default=0, help="which row to stop")
     args = parser.parse_args()
 
-    NEO_USER = os.environ['NEO_USER']
-    NEO_PASS = os.environ['NEO_PASS']
-    NEO_HOST = os.environ.get('NEO_HOST', 'localhost:7474')
+    if args.verbosity >= 3:
+        # dumps *all* debug info
+        logging.basicConfig(level=logging.DEBUG)
+    if args.verbosity >= 2:
+        link_log = logging.getLogger('link')
+        link_log.addHandler(logging.StreamHandler())
+        link_log.setLevel(logging.DEBUG)
+    elif args.verbosity >= 1:
+        link_log = logging.getLogger('link')
+        link_log.addHandler(logging.StreamHandler())
+        link_log.setLevel(logging.INFO)
 
-    db = py2neo.Graph("http://{user}:{passwd}@{host}/db/data/".format(host=NEO_HOST, user=NEO_USER,passwd=NEO_PASS))
+    # create a class on-the-fly
+    class OneTimeEnhancer(plugins.enhancer.Enhancer):
+        def __init__(self):
+            super(OneTimeEnhancer, self).__init__()
+            self.enhancers = []
 
-    result = db.cypher.execute("MATCH (ad:Ad) RETURN count(ad)")
-    total_ads = result.one
+            for enhancer in args.enhancer:
+                if hasattr(plugins, enhancer):
+                    enhancer_class = getattr(plugins, enhancer)
+                    self.enhancers.append(enhancer_class())
+                else:
+                    print("No such enhancer '%s' exists; skipping." % enhancer)
 
-    num_subprocess = 8
-    rem = total_ads % num_subprocess
-    step_size = (total_ads - rem) / num_subprocess
 
+        def cleanup(self):
+            for enhancer in self.enhancers:
+                enhancer.cleanup()
 
-    commands = []
-    for i in range(num_subprocess):
-        start = i * step_size
-        stop = (i + 1) * step_size
-        if (i + 1) == num_subprocess:
-            stop += rem
+        def enhance(self, record):
+            # it *must* run the enhancers in order!
+            for enhancer in self.enhancers:
+                enhancer.enhance(record)
 
-        execution_cmd = [
-            "./driver",
-            "-v" if args.verbosity==1 else "",
-            "-vv" if args.verbosity==2 else "",
-            "-vvv" if args.verbosity>=3 else "",
-            "--start %d" % start,
-            "--stop %d" % stop,
-        ] + args.enhancer + ["&"]
-        commands.extend(execution_cmd)
-
-    commands += ["wait"]
-    shell_cmd = " ".join(commands)
-    subprocess.call(["/bin/bash", "-c", shell_cmd])
+    # instantiate the class that runs all the enhancers in sequence
+    enhance = OneTimeEnhancer()
+    if enhance.enhancers:
+        enhance.run(start=args.start, stop=args.stop)
