@@ -79,7 +79,14 @@ with warnings.catch_warnings():
     watch("httpstream")
     try:
         cursor=connection.cursor()
-        sql = "SELECT * from ads ORDER BY id DESC LIMIT 10000"
+        sql = ["SELECT * FROM (SELECT * from ads ORDER BY id DESC LIMIT 1000) DUMMY",
+               "SELECT * from ads LIMIT 1000",
+               "SELECT * from ads where phone='4059285288'",
+               "SELECT * from ads where phone='4047842015'",
+               "SELECT * from ads where phone='8703950134'",
+               "SELECT * from ads where phone='6984584328'",
+               "SELECT * from ads where phone='5109788125'"]
+        sql = " UNION ".join(sql)
         cursor.execute(sql)
 
         for i, result in enumerate(cursor):
