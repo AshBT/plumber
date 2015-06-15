@@ -15,9 +15,9 @@ def listify(x):
     return x if isinstance(x, list) else [x]
 
 class ImageLinker(enhancer.SQLEnhancer):
-    def __init__(self):
+    def __init__(self, **kwargs):
         db_name = os.environ.get("SQL_DB", "memex_ht")
-        super(ImageLinker, self).__init__(db=db_name)
+        super(ImageLinker, self).__init__(db=db_name, **kwargs)
         # this cypher statement looks up all entities associated with
         # the current node and adds a relationship for each image in
         # the node to those entities

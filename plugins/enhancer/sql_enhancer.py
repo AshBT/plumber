@@ -13,8 +13,8 @@ def fix_encoding(elem):
         return elem
 
 class SQLEnhancer(enhancer.Enhancer):
-    def __init__(self, db, user=os.environ['SQL_USER'], password=os.environ['SQL_PASS'], host=os.environ['SQL_HOST']):
-        super(SQLEnhancer, self).__init__()
+    def __init__(self, db, user=os.environ['SQL_USER'], password=os.environ['SQL_PASS'], host=os.environ['SQL_HOST'], **kwargs):
+        super(SQLEnhancer, self).__init__(**kwargs)
 
         log.debug("Connecting to MySQL DB at %s" % host)
         self.connection = pymysql.connect(host=host,

@@ -19,9 +19,6 @@ name2codepoint['#39'] = 39
 log = logging.getLogger("link.plugins.twitter")
 
 class TextHash(enhancer.Enhancer):
-	def __init__(self):
-		super(TextHash, self).__init__()
-		
 	def unescape(self,s):
 	    "unescape HTML code refs; c.f. http://wiki.python.org/moin/EscapingHtml"
 	    return re.sub('&(%s);' % '|'.join(name2codepoint),

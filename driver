@@ -73,7 +73,7 @@ available enhancers:
             for enhancer in args.enhancer:
                 if hasattr(plugins, enhancer):
                     enhancer_class = getattr(plugins, enhancer)
-                    self.enhancers.append(enhancer_class())
+                    self.enhancers.append(enhancer_class(graph=self.db))
                 else:
                     print("No such enhancer '%s' exists; skipping." % enhancer)
 

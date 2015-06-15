@@ -33,8 +33,8 @@ def with_retries(f, *args, **kwargs):
 	return result
 
 class Twitter(enhancer.Enhancer):
-	def __init__(self):
-		super(Twitter, self).__init__()
+	def __init__(self, **kwargs):
+		super(Twitter, self).__init__(**kwargs)
 
 		TWITTER_CONSUMER_KEY = os.environ['TWITTER_CONSUMER_KEY']
 		TWITTER_CONSUMER_KEY_SECRET = os.environ['TWITTER_CONSUMER_SECRET']

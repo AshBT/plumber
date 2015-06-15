@@ -23,8 +23,8 @@ def get_filepath(image_url):
 	return os.path.splitext(basename)[0]
 
 class FaceFinder (enhancer.Enhancer):
-	def __init__(self):
-		super(FaceFinder, self).__init__()
+	def __init__(self, **kwargs):
+		super(FaceFinder, self).__init__(**kwargs)
 		self.image_directory = tempfile.mkdtemp()
 		self.cascPath = os.getcwd() + "/plugins" + "/haarcascade_frontalface_default.xml"
 		log.debug("Haar cascade path: '{}'".format(self.cascPath))

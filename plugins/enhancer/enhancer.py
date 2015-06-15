@@ -4,17 +4,20 @@ import traceback
 from abc import ABCMeta, abstractmethod
 from py2neo import Graph, Node, Relationship, watch, GraphError
 
+from py2neo.packages.httpstream import http
+http.socket_timeout = 9999
+
 log = logging.getLogger("link.enhancer")
 
 class Enhancer(object):
 	__metaclass__ = ABCMeta
 
-	def __init__(self):
+	def __init__(self, graph = None):
 		NEO_USER = os.environ['NEO_USER']
 		NEO_PASS = os.environ['NEO_PASS']
 		NEO_HOST = os.environ.get('NEO_HOST', 'localhost:7474')
 
-		self.db = Graph("http://{user}:{passwd}@{host}/db/data/".format(host=NEO_HOST, user=NEO_USER,passwd=NEO_PASS))
+		self.db = Graph("http://{user}:{passwd}@{host}/db/data/".format(host=NEO_HOST, user=NEO_USER,passwd=NEO_PASS)) if graph is None else graph
 
 	@abstractmethod
 	def enhance(self, node):
@@ -60,19 +63,28 @@ class Enhancer(object):
 						log.debug("<== %s" % str(node))
 					except Exception as e:
 						log.error("[Exception] Skipping record; caught an exception during handling: '%s'" % e)
-						log.error(traceback.format_exc())
+						#log.error(traceback.format_exc())
 						if skip_on_error:
 							continue
 						else:
 							raise e
-
-					if stop is not None:
-						if counter >= (stop - start):
-							stop_now = True
-							break
-							
-				self.db.push(*nodes)
-				node = []
+					finally:
+						if stop is not None:
+							if counter >= (stop - start):
+								stop_now = True
+								break
+				try:					
+					self.db.push(*nodes)
+				except Exception as e:
+					log.error("[Exception] '%s', pushing '%d' nodes serially" % (e, len(nodes)))
+					# try to update serially
+					for n in nodes:
+						try:
+							n.push()
+						except Exception as e:
+							log.error("[Exception] Skipping node: '%s'" % str(n))
+							continue
+				nodes = []
 
 				if stop_now or len(result) < batch_size:
 					# if the number of returned results is less than the

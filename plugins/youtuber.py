@@ -33,8 +33,8 @@ class Video:
 		
 class Youtube(enhancer.Enhancer):
 
-	def __init__(self):
-		super(Youtube, self).__init__()
+	def __init__(self, **kwargs):
+		super(Youtube, self).__init__(**kwargs)
 		YOUTUBE_DEVELOPER_KEY = os.environ['YOUTUBE_DEVELOPER_KEY']
 		YOUTUBE_API_SERVICE_NAME = "youtube"
 		YOUTUBE_API_VERSION = "v3"

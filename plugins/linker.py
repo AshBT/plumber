@@ -16,8 +16,8 @@ def listify(x):
     return x if isinstance(x, list) else [x]
 
 class Linker(enhancer.Enhancer):
-    def __init__(self):
-        super(Linker, self).__init__()
+    def __init__(self, **kwargs):
+        super(Linker, self).__init__(**kwargs)
 
         # this cypher statement looks up all entities associated with
         # the matching ad and creates a relationship between those

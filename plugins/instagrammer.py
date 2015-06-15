@@ -31,8 +31,8 @@ class HTMLStripper(HTMLParser):
 		return ''.join(self.fed)
 
 class Instagram(enhancer.Enhancer):
-	def __init__(self):
-		super(Instagram, self).__init__()
+	def __init__(self, **kwargs):
+		super(Instagram, self).__init__(**kwargs)
 		self.INSTAGRAM_CLIENT_ID = os.environ['INSTAGRAM_CLIENT_ID']
 		self.INSTAGRAM_CLIENT_SECRET = os.environ['INSTAGRAM_CLIENT_SECRET']
 		self.INSTAGRAM_ACCESS_TOKEN = os.environ['INSTAGRAM_ACCESS_TOKEN']
