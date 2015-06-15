@@ -63,6 +63,10 @@ available enhancers:
         link_log = logging.getLogger('link')
         link_log.addHandler(logging.StreamHandler())
         link_log.setLevel(logging.INFO)
+    else:
+        link_log = logging.getLogger('link')
+        link_log.addHandler(logging.StreamHandler())
+        link_log.setLevel(logging.WARNING)
 
     # create a class on-the-fly
     class OneTimeEnhancer(plugins.enhancer.Enhancer):
