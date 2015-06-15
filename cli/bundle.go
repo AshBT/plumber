@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"fmt"
 	"github.com/qadium/plumber/shell"
 	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
+	"path"
 )
 
 type templateContext struct {
@@ -109,19 +109,21 @@ func removeTempFile(f *os.File) {
 	}
 }
 
-func (ctx *Context) Bundle(path string) error {
-	log.Printf("==> Creating bundle from '%s'", path)
+// Bundle stuff...
+// BUG(echu): need to figure out how to handle conflicts in bundle names
+func (ctx *Context) Bundle(bundlePath string) error {
+	log.Printf("==> Creating bundle from '%s'", bundlePath)
 	defer log.Printf("<== Bundling complete.")
 
 	log.Printf(" |  Parsing bundle config.")
-	bundleConfig, err := ParseBundleFromDir(path)
+	bundleConfig, err := ParseBundleFromDir(bundlePath)
 	if err != nil {
 		return err
 	}
 	log.Printf("    %v", bundleConfig)
 
 	log.Printf(" |  Making temp file for python wrapper")
-	wrapper, err := ioutil.TempFile(path, "plumber")
+	wrapper, err := ioutil.TempFile(bundlePath, "plumber")
 	defer removeTempFile(wrapper)
 	if err != nil {
 		return err
@@ -129,7 +131,7 @@ func (ctx *Context) Bundle(path string) error {
 	log.Printf("    Created '%s'", wrapper.Name())
 
 	templateCtx := templateContext{
-		Wrapper: wrapper.Name(),
+		Wrapper: path.Base(wrapper.Name()),
 		Plumber: bundleConfig,
 	}
 
@@ -144,7 +146,7 @@ func (ctx *Context) Bundle(path string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Making temp file for Dockerfile")
-	dockerfile, err := ioutil.TempFile(path, "plumber")
+	dockerfile, err := ioutil.TempFile(bundlePath, "plumber")
 	defer removeTempFile(dockerfile)
 	if err != nil {
 		return err
@@ -162,11 +164,10 @@ func (ctx *Context) Bundle(path string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Building container.")
-	imageName := fmt.Sprintf("plumber/%s", bundleConfig.Name)
-	err = shell.RunAndLog("docker", "build", "--pull", "-t", imageName, "-f", dockerfile.Name(), path)
+	err = shell.RunAndLog("docker", "build", "--pull", "-t", ctx.GetImage(bundleConfig.Name), "-f", dockerfile.Name(), bundlePath)
 	if err != nil {
 		return err
 	}
-	log.Printf("    Container 'plumber/%s' built.", bundleConfig.Name)
+	log.Printf("    Container '%s' built.", ctx.GetImage(bundleConfig.Name))
 	return nil
 }
