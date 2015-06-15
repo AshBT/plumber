@@ -66,7 +66,7 @@ func (ctx *Context) Bootstrap() error {
 		"-v",
 		fmt.Sprintf("%s:/src", ctx.BootstrapDir),
 		"centurylink/golang-builder",
-		ctx.Image); err != nil {
+		ctx.GetManagerImage()); err != nil {
 		return err
 	}
 
