@@ -167,7 +167,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 
 	for i := len(sortedPipeline) - 1; i >= 0; i-- {
 		bundleName := sortedPipeline[i]
-		localDockerTag := fmt.Sprintf("plumber/%s", bundleName)
+		localDockerTag := ctx.GetImage(bundleName)
 		remoteDockerTag := fmt.Sprintf("gcr.io/%s/plumber-%s", projectId, bundleName)
 		data := kubeData{
 			BundleName:     bundleName,
@@ -202,7 +202,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 	}
 	// create the manager service
 	data := kubeData{
-		BundleName:     "manager",
+		BundleName:     ctx.GetManagerImage(),
 		ImageName:      fmt.Sprintf("gcr.io/%s/plumber-manager", projectId),
 		PlumberVersion: ctx.Version,
 		PlumberCommit:  ctx.GitCommit,
@@ -213,7 +213,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 	}
 	// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
 	log.Printf("    Retagging: '%s'", data.BundleName)
-	err := shell.RunAndLog("docker", "tag", "-f", "plumber/manager", data.ImageName)
+	err := shell.RunAndLog("docker", "tag", "-f", data.BundleName, data.ImageName)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 	}
 
 	// step 4. launch all the services
-	err = shell.RunAndLog("kubectl", "create", "-f", fmt.Sprintf("%s/k8s", pipeline.path))
+	err = shell.RunAndLog("kubectl", "create", "-f", k8s)
 	if err != nil {
 		return err
 	}
