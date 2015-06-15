@@ -12,8 +12,9 @@ type Context struct {
 	KubeSuffix   string // the suffix to use to store kubernetes files
 	GitCommit    string // the current git commit
 	Version      string // the current version
-	Image        string // the desired image name
+	ManagerImage string // the desired image name for bootstrapping
 	BootstrapDir string // the directory to use for bootstrapping
+	ImageRepo    string // the prefix to use for images
 }
 
 const plumberDir = ".plumber"
@@ -39,8 +40,9 @@ func NewDefaultContext() (*Context, error) {
 		k8sDir,
 		GitCommit,
 		versionString(),
-		"plumber/manager",
+		"manager",
 		fmt.Sprintf("%s/%s", usr.HomeDir, bootstrapDir),
+		"plumber",
 	}
 	return d, nil
 }
@@ -69,6 +71,20 @@ func (d *Context) KubernetesPath(name string) string {
 	path := d.PipelinePath(name)
 	k8s := fmt.Sprintf("%s/%s", path, d.KubeSuffix)
 	return k8s
+}
+
+// Get the manager's image name
+func (d *Context) GetManagerImage() string {
+	return d.GetImage(d.ManagerImage)
+}
+
+// Get an image name
+func (d *Context) GetImage(name string) string {
+	if d.ImageRepo == "" {
+		return name
+	} else {
+		return fmt.Sprintf("%s/%s", d.ImageRepo, name)
+	}
 }
 
 func versionString() string {

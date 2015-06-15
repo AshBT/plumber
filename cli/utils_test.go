@@ -6,7 +6,11 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"os/exec"
+	"net/url"
+	"strings"
 	"testing"
+	"bytes"
 )
 
 const testPlumberDir = "foo"
@@ -34,16 +38,40 @@ func NewTestContext(t *testing.T) (*cli.Context, string) {
 		testKubeSuffix,
 		"",
 		"test-version",
-		"plumber/test-manager",
+		"manager",
 		fmt.Sprintf("%s/%s", tempDir, testBootstrapDir),
+		"plumber_test",
 	}
 	return d, tempDir
 }
 
 func cleanTestDir(t *testing.T, tempDir string) {
 	if err := os.RemoveAll(tempDir); err != nil {
-		t.Errorf("Had an issue removing the temp file, '%v'", err)
+		t.Errorf("Had an issue removing the temp directory, '%v'", err)
 	}
+}
+
+func getImageIp(t *testing.T, imageName string) string {
+	// get the DOCKER_HOST environment variable; if not defined, use
+	// docker to find it
+	hostIp := os.Getenv("DOCKER_HOST")
+	if hostIp == "" {
+		cmd := exec.Command("docker", "inspect", "--format='{{.NetworkSettings.Gateway}}'", imageName)
+		hostIpBytes, err := cmd.Output()
+		if err != nil {
+			t.Errorf("Got an error during docker inspect: '%v'", err)
+		}
+		hostIpBytes = bytes.Trim(hostIpBytes, "\r\n")
+		hostIp = string(hostIpBytes)
+	} else {
+		hostUrl, err := url.Parse(hostIp)
+		if err != nil {
+			t.Errorf("Got an error during url parsing: '%v'", err)
+		}
+		// docker host is usually in the form of IP:PORT
+		hostIp = strings.Split(hostUrl.Host, ":")[0]
+	}
+	return hostIp
 }
 
 func TestPipelinePath(t *testing.T) {
@@ -104,9 +132,29 @@ func TestDefaultContext(t *testing.T) {
 	}
 
 	if ctx.PipeDir != fmt.Sprintf("%s/.plumber", usr.HomeDir) ||
-		ctx.KubeSuffix != "k8s" || ctx.Image != "plumber/manager" ||
-		ctx.BootstrapDir != fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir) {
+		ctx.KubeSuffix != "k8s" || ctx.ManagerImage != "manager" ||
+		ctx.BootstrapDir != fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir) ||
+		ctx.ImageRepo != "plumber" {
 		t.Errorf("DefaultContext: '%v' was not expected.", ctx)
 	}
+}
 
+func TestGetManagerImage(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	defer cleanTestDir(t, tempDir)
+
+	imageName := ctx.GetManagerImage()
+	if imageName != "plumber_test/manager" {
+		t.Error("GetManagerImage: did not return expected image name.")
+	}
+}
+
+func TestGetImage(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	defer cleanTestDir(t, tempDir)
+
+	imageName := ctx.GetImage("whatnot")
+	if imageName != "plumber_test/whatnot" {
+		t.Error("GetImage: did not return expected image name.")
+	}
 }
