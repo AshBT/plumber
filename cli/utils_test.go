@@ -1,16 +1,16 @@
 package cli_test
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/qadium/plumber/cli"
 	"io/ioutil"
-	"os"
-	"os/user"
-	"os/exec"
 	"net/url"
+	"os"
+	"os/exec"
+	"os/user"
 	"strings"
 	"testing"
-	"bytes"
 )
 
 const testPlumberDir = "foo"

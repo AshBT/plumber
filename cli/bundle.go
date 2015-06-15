@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"text/template"
 	"path"
+	"text/template"
 )
 
 type templateContext struct {

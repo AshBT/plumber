@@ -1,15 +1,16 @@
 package cli_test
 
 import (
-	"testing"
 	"fmt"
-	"io/ioutil"
 	"github.com/qadium/plumber/shell"
-	"time"
+	"io/ioutil"
 	"net/http"
+	"testing"
+	"time"
 	//"log"
 	"bytes"
 )
+
 // put bundle under test by inputting yaml from string and checking
 // that output Dockerfile is expected
 //
