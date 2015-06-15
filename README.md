@@ -20,6 +20,18 @@ However, this will not display the git SHA1 information with `plumber version`.
 ### Prerequisites
 You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
 
+### Developers
+For those wishing to hack on `plumber`, you'll need
+
+- git
+- docker
+- golang
+- gcloud
+- kubectl (via gcloud)
+- make
+
+Run `make test`. This will run the commands and shell out to `git` and `docker` when necessary. It will also create folders if needed.
+
 ## Enhancers and linkers
 
 Developers create enhancers and linkers by adhering to a simple programmatic interface and providing a YAML config file in their repository. The requirement is simple: implement a (public) `run` function that takes a map (or dictionary) in and returns a new map.
