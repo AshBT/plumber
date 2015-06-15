@@ -182,7 +182,7 @@ func TestParseBundleFromDir(t *testing.T) {
 	}
 	defer func() {
 		if err := os.RemoveAll(tempDir); err != nil {
-			t.Errorf("Had an issue removing the temp file, '%v'", err)
+			t.Errorf("Had an issue removing the temp directory, '%v'", err)
 		}
 	}()
 
