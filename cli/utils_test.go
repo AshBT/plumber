@@ -158,3 +158,14 @@ func TestGetImage(t *testing.T) {
 		t.Error("GetImage: did not return expected image name.")
 	}
 }
+
+func TestGetImageWithNoImageRepo(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	ctx.ImageRepo = ""
+	defer cleanTestDir(t, tempDir)
+
+	imageName := ctx.GetImage("IAmReallyHere")
+	if imageName != "IAmReallyHere" {
+		t.Error("GetImageWithNoImageRepo: did not return expected image name.")
+	}
+}
