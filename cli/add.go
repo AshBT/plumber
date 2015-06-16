@@ -19,6 +19,9 @@ func addOne(ctx *Context, pipeline string, bundle string) error {
 
 	log.Printf(" |  Parsing bundle config.")
 	bundleConfig, err := ParseBundleFromDir(bundle)
+	if err != nil {
+		return err
+	}
 	log.Printf("    Done.")
 
 	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", bundleConfig.Name)
@@ -52,7 +55,9 @@ func (ctx *Context) Add(pipeline string, bundles ...string) error {
 	defer log.Printf("<== Adding complete.")
 
 	for _, bundle := range bundles {
-		addOne(ctx, pipeline, bundle)
+		if err := addOne(ctx, pipeline, bundle); err != nil {
+			return err
+		}
 	}
 
 	return nil
