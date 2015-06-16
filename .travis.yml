@@ -3,7 +3,8 @@ go:
   - 1.3
   - tip
 before_install:
-  - openssl aes-256-cbc -K $encrypted_6d2b7347f8c6_key -iv $encrypted_6d2b7347f8c6_iv -in variables.enc -out variables -d
+  - git config --global user.email "ci@bot.com"
+  - git config --global user.name "Plumber Travis CI"
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi

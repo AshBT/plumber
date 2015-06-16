@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/qadium/plumber/shell"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 	"time"
@@ -15,8 +13,6 @@ import (
 // we check that boostrap works by actually running the boostrap command
 // and checking that the container is built and runs
 func TestBootstrap(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 

@@ -2,8 +2,6 @@ package cli_test
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -11,8 +9,6 @@ import (
 )
 
 func TestAddExistingPipeline(t *testing.T) {
-	//log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 
@@ -48,8 +44,6 @@ func TestAddExistingPipeline(t *testing.T) {
 }
 
 func TestAddWithoutPipeline(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 
@@ -63,8 +57,6 @@ func TestAddWithoutPipeline(t *testing.T) {
 }
 
 func TestAddWithoutBundle(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 

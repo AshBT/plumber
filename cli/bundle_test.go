@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"testing"
 	"time"
-	//"log"
 	"bytes"
 )
 

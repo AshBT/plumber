@@ -2,15 +2,11 @@ package cli_test
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"testing"
 )
 
 func TestCreate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 
@@ -33,8 +29,6 @@ func TestCreate(t *testing.T) {
 
 // when passing an empty string, should give an error
 func TestEmptyCreate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 
@@ -46,8 +40,6 @@ func TestEmptyCreate(t *testing.T) {
 
 // when creating an existing pipeline, should give an error
 func TestExistingCreate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	ctx, tempDir := NewTestContext(t)
 	defer cleanTestDir(t, tempDir)
 
