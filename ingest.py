@@ -8,7 +8,6 @@ import pymysql.cursors
 import ftfy
 import gevent
 import gevent.queue
-
 SQL_USER = os.environ['SQL_USER']
 SQL_PASS = os.environ['SQL_PASS']
 SQL_HOST = os.environ['SQL_HOST']
@@ -47,7 +46,11 @@ def collect_ads(gid):
         ad = work_queue.get()
         i += 1
         if ad == "!!STOP!!":
-            graph.create(*nodes)
+            try:
+                graph.create(*nodes)
+            except:
+                for node in nodes:
+                    graph.create(node)
             t1 = time.time()
             print "[Greenlet %02d] %09d: Elapsed" % (gid, i), (t1 - t0), "seconds"
             break
@@ -55,7 +58,11 @@ def collect_ads(gid):
             nodes.append(ad)
 
         if len(nodes) == batch_size:
-            graph.create(*nodes)
+            try:
+                graph.create(*nodes)
+            except:
+                for node in nodes:
+                    graph.create(node)
             t1 = time.time()
             nodes = []
             print "[Greenlet %02d] %09d: Elapsed" % (gid, i), (t1 - t0), "seconds"
@@ -90,12 +97,17 @@ with warnings.catch_warnings():
         cursor.execute(sql)
 
         for i, result in enumerate(cursor):
+            remove_fields = []
             # fix some bad unicode encodings
             for k in result:
+                #print type(result[k])
                 if isinstance(result[k], unicode):
                     result[k] = ftfy.fix_encoding(result[k])
+                if k == 'phone':
+                    number = result[k]
+                    result[k] = [number] if number is not None else []
+
             # put result into work queue
-            #print(result)
             work_queue.put(Node("Ad", "Datum", **result))
     finally:
         # send the stop signal to all workers
