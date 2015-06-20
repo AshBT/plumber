@@ -17,7 +17,7 @@ NEO_HOST = os.environ.get('NEO_HOST', 'localhost:7474')
 
 # connect to local neo4j database
 graph = Graph("http://{user}:{passwd}@{host}/db/data/".format(host=NEO_HOST, user=NEO_USER, passwd=NEO_PASS))
-graph.delete_all()
+#graph.delete_all()
 try:
     graph.schema.create_uniqueness_constraint("Entity", "identifier")
 except GraphError as e:
@@ -37,6 +37,15 @@ workers = 8
 # work queue for passing data around
 work_queue = gevent.queue.Queue(maxsize=batch_size * workers)
 
+def add_nodes(nodes):
+    tx = graph.cypher.begin()
+
+    statement = "MERGE (n:Ad:Datum {id:{ID}}) ON CREATE SET n = {props} RETURN n"
+    for node in nodes:
+       tx.append(statement, {"ID": node["id"], "props": node}) 
+
+    tx.commit()
+
 def collect_ads(gid):
     nodes = []
     t0 = time.time()
@@ -46,11 +55,7 @@ def collect_ads(gid):
         ad = work_queue.get()
         i += 1
         if ad == "!!STOP!!":
-            try:
-                graph.create(*nodes)
-            except:
-                for node in nodes:
-                    graph.create(node)
+            add_nodes(nodes)
             t1 = time.time()
             print "[Greenlet %02d] %09d: Elapsed" % (gid, i), (t1 - t0), "seconds"
             break
@@ -58,11 +63,7 @@ def collect_ads(gid):
             nodes.append(ad)
 
         if len(nodes) == batch_size:
-            try:
-                graph.create(*nodes)
-            except:
-                for node in nodes:
-                    graph.create(node)
+            add_nodes(nodes)
             t1 = time.time()
             nodes = []
             print "[Greenlet %02d] %09d: Elapsed" % (gid, i), (t1 - t0), "seconds"
@@ -94,7 +95,8 @@ with warnings.catch_warnings():
                "SELECT * from ads where phone='6984584328'",
                "SELECT * from ads where phone='5109788125'"]
         sql = " UNION ".join(sql)
-        cursor.execute(sql)
+        sql = "SELECT * FROM ads ORDER BY id DESC"
+	cursor.execute(sql)
 
         for i, result in enumerate(cursor):
             remove_fields = []
@@ -108,7 +110,7 @@ with warnings.catch_warnings():
                     result[k] = [number] if number is not None else []
 
             # put result into work queue
-            work_queue.put(Node("Ad", "Datum", **result))
+            work_queue.put(result)
     finally:
         # send the stop signal to all workers
         for _ in range(workers):
