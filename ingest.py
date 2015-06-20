@@ -1,3 +1,6 @@
+from gevent.monkey import patch_all
+patch_all()
+
 import os
 import pprint
 import json
@@ -35,14 +38,15 @@ batch_size = 100
 workers = 8
 
 # work queue for passing data around
-work_queue = gevent.queue.Queue(maxsize=batch_size * workers)
+work_queue = gevent.queue.Queue()
 
 def add_nodes(nodes):
     tx = graph.cypher.begin()
 
     statement = "MERGE (n:Ad:Datum {id:{ID}}) ON CREATE SET n = {props} RETURN n"
     for node in nodes:
-       tx.append(statement, {"ID": node["id"], "props": node}) 
+        tx.append(statement, {"ID": node["id"], "props": node}) 
+	gevent.sleep(0)
 
     tx.commit()
 
@@ -84,7 +88,7 @@ with warnings.catch_warnings():
 
     count = 0
 
-    watch("httpstream")
+    #watch("httpstream")
     try:
         cursor=connection.cursor()
         sql = ["SELECT * FROM (SELECT * from ads ORDER BY id DESC LIMIT 1000) DUMMY",
@@ -99,7 +103,6 @@ with warnings.catch_warnings():
 	cursor.execute(sql)
 
         for i, result in enumerate(cursor):
-            remove_fields = []
             # fix some bad unicode encodings
             for k in result:
                 #print type(result[k])
@@ -108,9 +111,15 @@ with warnings.catch_warnings():
                 if k == 'phone':
                     number = result[k]
                     result[k] = [number] if number is not None else []
-
+		if k == 'text':
+		    text = result[k]
+		    result[k] = text if text is not None else ""
+		if k == 'title':
+		    title = result[k]
+		    result[k] = title if title is not None else ""
             # put result into work queue
             work_queue.put(result)
+	    gevent.sleep(0)
     finally:
         # send the stop signal to all workers
         for _ in range(workers):
