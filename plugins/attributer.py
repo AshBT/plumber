@@ -21,5 +21,8 @@ class Attributer(enhancer.SQLEnhancer):
         for key in datum:
             # append the node's value if the key already exists
             if key in node:
-                datum[key].add(node[key])
-            node[key] = datum[key]
+		if isinstance(node[key], list):
+		    datum[key] |= set(node[key])
+		else:
+                    datum[key].add(node[key])
+            node[key] = filter(None, datum[key])
