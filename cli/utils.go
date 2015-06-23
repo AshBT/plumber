@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"net"
+	"errors"
+	"net/url"
+	"strings"
 )
 
 // Useful information for the plumber CLI tool goes here
@@ -15,6 +19,8 @@ type Context struct {
 	ManagerImage string // the desired image name for bootstrapping
 	BootstrapDir string // the directory to use for bootstrapping
 	ImageRepo    string // the prefix to use for images
+	DockerIface  string // the docker network interface name
+	DockerHostEnv string // the DOCKER_HOST environment variable
 }
 
 const plumberDir = ".plumber"
@@ -43,6 +49,8 @@ func NewDefaultContext() (*Context, error) {
 		"manager",
 		fmt.Sprintf("%s/%s", usr.HomeDir, bootstrapDir),
 		"plumber",
+		"docker0",
+		"DOCKER_HOST",
 	}
 	return d, nil
 }
@@ -85,6 +93,44 @@ func (d *Context) GetImage(name string) string {
 	} else {
 		return fmt.Sprintf("%s/%s", d.ImageRepo, name)
 	}
+}
+
+// Gets the IP address used for local containers. This uses the
+// DOCKER_HOST environment variable; if not available, we'll look for
+// the ip address associated with the `docker0` device. If that, too,
+// is missing, we will give an error.
+func (d *Context) GetDockerHost() (string, error) {
+	hostIp := os.Getenv(d.DockerHostEnv)
+	if hostIp == "" {
+		// find interface named d.DockerIface (usually "docker0")
+		iface, err := net.InterfaceByName(d.DockerIface)
+		if err != nil {
+			return "", err
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return "", err
+		}
+		for _, addr := range addrs {
+			ip, _, err := net.ParseCIDR(addr.String())
+			if err != nil {
+				return "", err
+			}
+			ipv4 := ip.To4()
+			if ipv4 != nil {
+				return ipv4.String(), nil
+			}
+		}
+	} else {
+		// docker host is usually in the form of [http:// | unix://]IP:PORT
+		hostUrl, err := url.Parse(hostIp)
+		if err != nil {
+			return "", err
+		}
+		hostIp = strings.Split(hostUrl.Host, ":")[0]
+		return hostIp, nil
+	}
+	return "", errors.New("Unable to obtain docker host")
 }
 
 func versionString() string {

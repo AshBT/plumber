@@ -1,16 +1,13 @@
 package cli_test
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/qadium/plumber/cli"
 	"io/ioutil"
-	"net/url"
 	"os"
-	"os/exec"
 	"os/user"
-	"strings"
 	"testing"
+	"runtime"
 )
 
 const testPlumberDir = "foo"
@@ -41,6 +38,8 @@ func NewTestContext(t *testing.T) (*cli.Context, string) {
 		"manager",
 		fmt.Sprintf("%s/%s", tempDir, testBootstrapDir),
 		"plumber_test",
+		"docker0",
+		"DOCKER_HOST",
 	}
 	return d, tempDir
 }
@@ -49,29 +48,6 @@ func cleanTestDir(t *testing.T, tempDir string) {
 	if err := os.RemoveAll(tempDir); err != nil {
 		t.Errorf("Had an issue removing the temp directory, '%v'", err)
 	}
-}
-
-func getImageIp(t *testing.T, imageName string) string {
-	// get the DOCKER_HOST environment variable; if not defined, use
-	// docker to find it
-	hostIp := os.Getenv("DOCKER_HOST")
-	if hostIp == "" {
-		cmd := exec.Command("docker", "inspect", "--format='{{.NetworkSettings.Gateway}}'", imageName)
-		hostIpBytes, err := cmd.Output()
-		if err != nil {
-			t.Errorf("Got an error during docker inspect: '%v'", err)
-		}
-		hostIpBytes = bytes.Trim(hostIpBytes, "\r\n")
-		hostIp = string(hostIpBytes)
-	} else {
-		hostUrl, err := url.Parse(hostIp)
-		if err != nil {
-			t.Errorf("Got an error during url parsing: '%v'", err)
-		}
-		// docker host is usually in the form of IP:PORT
-		hostIp = strings.Split(hostUrl.Host, ":")[0]
-	}
-	return hostIp
 }
 
 func TestPipelinePath(t *testing.T) {
@@ -134,7 +110,8 @@ func TestDefaultContext(t *testing.T) {
 	if ctx.PipeDir != fmt.Sprintf("%s/.plumber", usr.HomeDir) ||
 		ctx.KubeSuffix != "k8s" || ctx.ManagerImage != "manager" ||
 		ctx.BootstrapDir != fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir) ||
-		ctx.ImageRepo != "plumber" {
+		ctx.ImageRepo != "plumber" || ctx.DockerIface != "docker0" ||
+		ctx.DockerHostEnv != "DOCKER_HOST" {
 		t.Errorf("DefaultContext: '%v' was not expected.", ctx)
 	}
 }
@@ -167,5 +144,59 @@ func TestGetImageWithNoImageRepo(t *testing.T) {
 	imageName := ctx.GetImage("IAmReallyHere")
 	if imageName != "IAmReallyHere" {
 		t.Error("GetImageWithNoImageRepo: did not return expected image name.")
+	}
+}
+
+func TestGetDockerHostFail(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	defer cleanTestDir(t, tempDir)
+	ctx.DockerHostEnv = "I_AM_AN_ENV_THAT_DOESNT_EXIST_***"
+	ctx.DockerIface = "reallyYouHaveAnIfaceWithThisName?"
+
+	hostIp, err := ctx.GetDockerHost()
+	if hostIp != "" || err == nil {
+		t.Errorf("GetDockerHostFail: did not fail as expected")
+	}
+	if err.Error() != "no such network interface" {
+		t.Errorf("GetDockerHostFail: got an unexpected error '%v'", err)
+	}
+}
+
+func TestGetDockerHostWithDockerHostEnv(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	defer cleanTestDir(t, tempDir)
+	if err := os.Setenv("PLUMBER_TEST_ENV", "http://127.0.0.1"); err != nil {
+		t.Errorf("GetDockerHostWithDockerHostEnv: did not set test env variable, '%v'.", err)
+	}
+	defer os.Unsetenv("PLUMBER_TEST_ENV")
+	ctx.DockerHostEnv = "PLUMBER_TEST_ENV"
+
+	hostIp, err := ctx.GetDockerHost()
+	if err != nil {
+		t.Errorf("GetDockerHostWithDockerHostEnv: got unexpected error '%v'.", err)
+	}
+	if hostIp != "127.0.0.1" {
+		t.Errorf("GetDockerHostWithDockerHostEnv: did not get expected IP. Got '%s' instead.", hostIp)
+	}
+}
+
+func TestGetDockerHostWithDockerIface(t *testing.T) {
+	ctx, tempDir := NewTestContext(t)
+	defer cleanTestDir(t, tempDir)
+	ctx.DockerHostEnv = "I_AM_AN_ENV_THAT_DOESNT_EXIST_***"
+	if runtime.GOOS == "darwin" {
+		ctx.DockerIface = "lo0"
+	} else if runtime.GOOS == "linux" {
+		ctx.DockerIface = "lo"
+	} else {
+		t.Skipf("GetDockerHostWithDockerIface: skipping test for this os '%s'", runtime.GOOS)
+	}
+
+	hostIp, err := ctx.GetDockerHost()
+	if err != nil {
+		t.Errorf("GetDockerHostWithDockerIface: got unexpected error '%v'.", err)
+	}
+	if hostIp != "127.0.0.1" {
+		t.Errorf("GetDockerHostWithDockerIface: did not get expected IP.")
 	}
 }
