@@ -22,20 +22,23 @@ func TestBootstrap(t *testing.T) {
 
 	// step 2. invoke Bootstrap for building ctx.GetManagerImage()
 	if err := ctx.Bootstrap(); err != nil {
-		t.Errorf("Got an error during bootstrap: '%v'", err)
+		t.Errorf("Bootstrap: Got an error during bootstrap: '%v'", err)
 	}
 	defer shell.RunAndLog("docker", "rmi", ctx.GetManagerImage())
 
 	// step 3. run the image (it *should* just echo in response)
 	if err := shell.RunAndLog("docker", "run", "-d", "-p", "9800:9800", "--name", "plumber-test", ctx.GetManagerImage()); err != nil {
-		t.Errorf("Got an error during docker run: '%v'", err)
+		t.Errorf("Bootstrap: Got an error during docker run: '%v'", err)
 	}
 	defer shell.RunAndLog("docker", "rm", "-f", "plumber-test")
 	// wait a bit for the container to come up
 	time.Sleep(1 * time.Second)
 
 	// step 4. send some JSON and check for echos
-	hostIp := getImageIp(t, "plumber-test")
+	hostIp, err := ctx.GetDockerHost()
+	if err != nil {
+		t.Errorf("Bootstrap: Got an error getting the docker host: '%v'", err)
+	}
 
 	// second, send over some JSON and verify result
 	resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"foo": 3}`))
@@ -46,6 +49,6 @@ func TestBootstrap(t *testing.T) {
 	buf.ReadFrom(resp.Body)
 	result := buf.String()
 	if result != `{"foo": 3}` {
-		t.Errorf("Got '%s'; did not get expected response", result)
+		t.Errorf("Bootstrap: Got '%s'; did not get expected response", result)
 	}
 }

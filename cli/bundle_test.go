@@ -63,13 +63,13 @@ func TestBundle(t *testing.T) {
 	// bundle the tempDir
 	err := ctx.Bundle(tempDir)
 	if err != nil {
-		t.Errorf("Got an unxpected error while bundling, '%v'", err)
+		t.Errorf("Bundle: Got an unxpected error while bundling, '%v'", err)
 	}
 	defer shell.RunAndLog("docker", "rmi", ctx.GetImage("foobar"))
 
 	// run the container and check that it increments the input
 	if err := shell.RunAndLog("docker", "run", "-d", "-p", "9800:9800", "--name", "foobar", ctx.GetImage("foobar")); err != nil {
-		t.Errorf("Got an error during docker run: '%v'", err)
+		t.Errorf("Bundle: Got an error during docker run: '%v'", err)
 	}
 	defer shell.RunAndLog("docker", "rm", "-f", "foobar")
 	// wait a bit for the container to come up
@@ -77,7 +77,10 @@ func TestBundle(t *testing.T) {
 
 	// step 4. send some JSON and check for echos
 	// first, find the IP to connect to
-	hostIp := getImageIp(t, "foobar")
+	hostIp, err := ctx.GetDockerHost()
+	if err != nil {
+		t.Errorf("Bootstrap: Got an error getting the docker host: '%v'", err)
+	}
 
 	// second, send over some JSON and verify result
 	resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"a": "trusty"}`))
@@ -88,6 +91,6 @@ func TestBundle(t *testing.T) {
 	buf.ReadFrom(resp.Body)
 	result := buf.String()
 	if result != `{"a": "trusty", "b": "echo trusty"}` {
-		t.Errorf("Got '%s'; did not get expected response", result)
+		t.Errorf("Bundle: Got '%s'; did not get expected response", result)
 	}
 }
