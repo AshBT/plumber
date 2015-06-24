@@ -1,27 +1,27 @@
 # Plumber [![Build Status](https://travis-ci.org/qadium/plumber.svg)](https://travis-ci.org/qadium/plumber) [![Coverage Status](https://coveralls.io/repos/qadium/plumber/badge.svg)](https://coveralls.io/r/qadium/plumber)
 Plumber is a tool to facilitate **distributed data exploration**. It comes with a `plumber` command line tool to deploy and manage data enhancers on a [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes) cluster.
 
-Based on information provided in a `.plumb.yml` file, `plumber` can compose a set of enhancers such that their dependencies are satisfied and deploy the data processing pipeline to a Kubernetes cluster. At the moment, we only support a local deploy (with Docker) and a cloud deploy with Google Cloud.
+Based on information provided in a `.plumb.yml` file, `plumber` can compose a set of enhancers such that their dependencies are satisfied and deploy the data processing pipeline to a Kubernetes cluster. At the moment, we support a local deploy (with Docker) and a cloud deploy with Google Cloud.
 
 ## Rationale
 Data processing tasks for ETL or data science typically involve data cleaning, data munging, or just adding new fields to a pre-set schema. Often, the trick is corralling raw data from a variety of sources into a form usable by algorithms that typically operate on floating point numbers or categorical data.
 
 This process can be thought of as a series of operations or transformations on raw data: we term these *enhancers*. Each enhancer can be as simple (e.g., a regex match) or as complex (e.g., a database lookup) as necessary to provide additional data. The only requirement for enhancers is that they take a map in and provide a map out.
 
+### Prerequisites to Installation
+You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
+
 ## Installation
 You can download the latest binaries (for Linux and OSX) [here](https://github.com/qadium/plumber/releases).
 After downloading, rename the binary to `plumber` and make sure the binary can be located through your `$PATH` variable.
 
-For instance, if you downloaded the binary, renamed it to `plumber`, and copied it to `/home/directory`, then adding `export PATH=$PATH:/home/directory` to your `.bashrc` should enable your terminal to locate the `plumber` binary.
+For instance, if you downloaded the binary, renamed it to `plumber`, and copied it to `/home/directory`, then adding `export PATH=$PATH:/home/directory` to your `.profile` should enable your terminal to locate the `plumber` binary.
 
 You can also use
 
     go get github.com/qadium/plumber
 
 However, this will not display the git SHA1 information with `plumber version`.
-
-### Prerequisites
-You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
 
 ### Developers
 For those wishing to hack on `plumber`, you'll need
@@ -35,7 +35,7 @@ For those wishing to hack on `plumber`, you'll need
 
 Run `make test`. This will run the commands and shell out to `git` and `docker` when necessary. It will also create folders if needed.
 
-## Enhancers and linkers
+## Enhancers and Linkers
 
 Developers create enhancers and linkers by adhering to a simple programmatic interface and providing a YAML config file in their repository. The requirement is simple: implement a (public) `run` function that takes a map (or dictionary) in and returns a new map.
 
@@ -48,13 +48,10 @@ By decoupling the transformations on each piece of data, we can also programmati
 ## Storm
 Storm topologies... very similar, not as dynamic. Not container based. Performance?
 
-## Docker compose aka Fig
+## Docker Compose (aka Fig)
 For more generic services; explicit linking. Full control of docker containers.
 
-## Others?
-I don't know of any others.
-
-# Hello, world
+# Getting Started with a Hello, World App
 First, you'll need to bootstrap `plumber` by creating a `manager` container.
 
     plumber bootstrap
@@ -71,13 +68,16 @@ The `plumber-hello` repository contains a piece of code that reads in a field `n
 
 The `plumber-host` respository contains a piece of code that reads in a field `hostname` from an input JSON and adds a field `name` that contains the resolution of that hostname to an IP address. If no IP can be resolved, it uses a default character, such as "?" for unknown.
 
-First, we'll play with the `plumber bundle` command. After cloning the repositories, run
+First, we'll demonstrate the `plumber bundle` command. After cloning the repositories, run
 
     cd plumber-hello && plumber bundle .
 
 This will package the *directory* into a Docker container which you can run locally with `docker run -p 9800:9800 plumber/hello`.
 
-You can then `curl localhost:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` (if you're on OSX, replace `localhost` with the output of `boot2docker ip`) and receive the output from the greeter, which should look something like
+If you're on a Linux machine, `curl localhost:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` 
+If you're on an OSX machine, get your docker ip address with `boot2docker ip` and then `curl [boot2docker ip]:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` 
+
+The output of the curl command should be:
 
     {"name": "qadium", "hello", "Hello, qadium, my name is bazbux"}
 
