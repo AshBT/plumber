@@ -9,7 +9,10 @@ Data processing tasks for ETL or data science typically involve data cleaning, d
 This process can be thought of as a series of operations or transformations on raw data: we term these *enhancers*. Each enhancer can be as simple (e.g., a regex match) or as complex (e.g., a database lookup) as necessary to provide additional data. The only requirement for enhancers is that they take a map in and provide a map out.
 
 ## Installation
-Download somewhere.
+You can download the latest binaries (for Linux and OSX) [here](https://github.com/qadium/plumber/releases).
+After downloading, rename the binary to `plumber` and make sure the binary can be located through your `$PATH` variable.
+
+For instance, if you downloaded the binary, renamed it to `plumber`, and copied it to `/home/directory`, then adding `export PATH=$PATH:/home/directory` to your `.bashrc` should enable your terminal to locate the `plumber` binary.
 
 You can also use
 
