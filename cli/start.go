@@ -41,8 +41,9 @@ type kubeData struct {
 
 func bundlesToGraphs(bundles []*Bundle) []*graph.Node {
 	nodes := make([]*graph.Node, len(bundles))
-	m := make(map[string]int) // this map maps inputs to the index of the
-	// node that uses it
+	// this map maps inputs to the index of the node that uses it
+	m := make(map[string]int)
+
 	// build a map to create the DAG
 	for i, bundle := range bundles {
 		nodes[i] = graph.NewNode(bundle.Name)
@@ -61,14 +62,14 @@ func bundlesToGraphs(bundles []*Bundle) []*graph.Node {
 	return nodes
 }
 
-func localStart(sortedPipeline []string) error {
+func localStart(ctx *Context, sortedPipeline []string) error {
 	log.Printf(" |  Starting bundles...")
-	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", "plumber/manager"}
+	managerDockerArgs := []string{"run", "-p", "9800:9800", "--rm", ctx.GetManagerImage()}
 	// walk through the reverse sorted bundles and start them up
 	for i := len(sortedPipeline) - 1; i >= 0; i-- {
 		bundleName := sortedPipeline[i]
 		log.Printf("    Starting: '%s'", bundleName)
-		cmd := exec.Command("docker", "run", "-d", "-P", fmt.Sprintf("plumber/%s", bundleName))
+		cmd := exec.Command(ctx.DockerCmd, "run", "-d", "-P", ctx.GetImage(bundleName))
 		containerId, err := cmd.Output()
 		if err != nil {
 			return err
@@ -76,7 +77,7 @@ func localStart(sortedPipeline []string) error {
 
 		defer func() {
 			log.Printf("    Stopping: '%s'", bundleName)
-			cmd := exec.Command("docker", "rm", "-f", string(containerId)[0:4])
+			cmd := exec.Command(ctx.DockerCmd, "rm", "-f", string(containerId)[0:4])
 			_, err := cmd.Output()
 			if err != nil {
 				panic(err)
@@ -85,20 +86,23 @@ func localStart(sortedPipeline []string) error {
 		}()
 
 		log.Printf("    Started: %s", string(containerId))
-		cmd = exec.Command("docker", "inspect", "--format='{{(index (index .NetworkSettings.Ports \"9800/tcp\") 0).HostPort}}'", string(containerId)[0:4])
+		cmd = exec.Command(ctx.DockerCmd, "inspect", "--format='{{(index (index .NetworkSettings.Ports \"9800/tcp\") 0).HostPort}}'", string(containerId)[0:4])
 		portNum, err := cmd.Output()
 		if err != nil {
 			return err
 		}
-		// should use docker host IP (for local deploy)
-		// should use "names" for kubernetes deploy
-		managerDockerArgs = append(managerDockerArgs, fmt.Sprintf("http://172.17.42.1:%s", string(portNum[:len(portNum)-1])))
+		// get the docker host IP for local deploy
+		hostIp, err := ctx.GetDockerHost()
+		if err != nil {
+			return err
+		}
+		managerDockerArgs = append(managerDockerArgs, fmt.Sprintf("http://%s:%s", hostIp, string(portNum[:len(portNum)-1])))
 	}
 	log.Printf("    Done.")
 	log.Printf("    Args passed to 'docker': %v", managerDockerArgs)
 
 	log.Printf(" |  Running manager. CTRL-C to quit.")
-	err := shell.RunAndLog("docker", managerDockerArgs...)
+	err := shell.RunAndLog(ctx.DockerCmd, managerDockerArgs...)
 	if err != nil {
 		return err
 	}
@@ -155,7 +159,7 @@ func writeKubernetesFiles(ctx *Context, templateData kubeData) error {
 
 func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeline pipelineInfo) error {
 	// we can probably get the project name with google cloud SDK
-	log.Printf("   Creating 'k8s' directory...")
+	log.Printf("   Creating '%s' directory...", ctx.KubeSubdir)
 	k8s := ctx.KubernetesPath(pipeline.name)
 
 	if err := os.MkdirAll(k8s, 0755); err != nil {
@@ -182,13 +186,13 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 
 		// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
 		log.Printf("    Retagging: '%s'", bundleName)
-		err := shell.RunAndLog("docker", "tag", "-f", localDockerTag, remoteDockerTag)
+		err := shell.RunAndLog(ctx.DockerCmd, "tag", "-f", localDockerTag, remoteDockerTag)
 		if err != nil {
 			return err
 		}
 		// step 2. push them to gce
 		log.Printf("    Submitting: '%s'", remoteDockerTag)
-		err = shell.RunAndLog("gcloud", "preview", "docker", "push", remoteDockerTag)
+		err = shell.RunAndLog(ctx.GcloudCmd, "docker", "push", remoteDockerTag)
 		if err != nil {
 			return err
 		}
@@ -202,7 +206,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 	}
 	// create the manager service
 	data := kubeData{
-		BundleName:     ctx.GetManagerImage(),
+		BundleName:     "manager",
 		ImageName:      fmt.Sprintf("gcr.io/%s/plumber-manager", projectId),
 		PlumberVersion: ctx.Version,
 		PlumberCommit:  ctx.GitCommit,
@@ -212,14 +216,14 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 		Args:           args,
 	}
 	// step 1. re-tag local containers to gcr.io/$GCE/$pipeline-$bundlename
-	log.Printf("    Retagging: '%s'", data.BundleName)
-	err := shell.RunAndLog("docker", "tag", "-f", data.BundleName, data.ImageName)
+	log.Printf("    Retagging: '%s'", ctx.GetManagerImage())
+	err := shell.RunAndLog(ctx.DockerCmd, "tag", "-f", ctx.GetManagerImage(), data.ImageName)
 	if err != nil {
 		return err
 	}
 	// step 2. push them to gce
 	log.Printf("    Submitting: '%s'", data.ImageName)
-	err = shell.RunAndLog("gcloud", "preview", "docker", "push", data.ImageName)
+	err = shell.RunAndLog(ctx.GcloudCmd, "docker", "push", data.ImageName)
 	if err != nil {
 		return err
 	}
@@ -229,7 +233,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 	}
 
 	// step 4. launch all the services
-	err = shell.RunAndLog("kubectl", "create", "-f", k8s)
+	err = shell.RunAndLog(ctx.KubectlCmd, "create", "-f", k8s)
 	if err != nil {
 		return err
 	}
@@ -313,7 +317,7 @@ func (ctx *Context) Start(pipeline, gce string) error {
 		return remoteStart(ctx, sortedPipeline, gce, info)
 	} else {
 		log.Printf(" |  Running local pipeline.")
-		return localStart(sortedPipeline)
+		return localStart(ctx, sortedPipeline)
 	}
 	return nil
 }
