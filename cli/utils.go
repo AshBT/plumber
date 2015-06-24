@@ -13,7 +13,7 @@ import (
 // Useful information for the plumber CLI tool goes here
 type Context struct {
 	PipeDir      string // the directory to store plumber pipelines
-	KubeSuffix   string // the suffix to use to store kubernetes files
+	KubeSubdir   string // the suffix to use to store kubernetes files
 	GitCommit    string // the current git commit
 	Version      string // the current version
 	ManagerImage string // the desired image name for bootstrapping
@@ -77,7 +77,7 @@ func (d *Context) GetPipeline(name string) (string, error) {
 // kubernetes YAML files for pods, services, and replication controllers
 func (d *Context) KubernetesPath(name string) string {
 	path := d.PipelinePath(name)
-	k8s := fmt.Sprintf("%s/%s", path, d.KubeSuffix)
+	k8s := fmt.Sprintf("%s/%s", path, d.KubeSubdir)
 	return k8s
 }
 

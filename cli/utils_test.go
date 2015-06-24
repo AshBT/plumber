@@ -14,7 +14,7 @@ const testPlumberDir = "foo"
 
 const testBootstrapDir = "boot"
 
-const testKubeSuffix = "k8s"
+const testKubeSubdir = "k8s"
 
 // mock for cli context (used for testing)
 // uses temp directories
@@ -32,7 +32,7 @@ func NewTestContext(t *testing.T) (*cli.Context, string) {
 
 	d := &cli.Context{
 		fmt.Sprintf("%s/%s", tempDir, testPlumberDir),
-		testKubeSuffix,
+		testKubeSubdir,
 		"",
 		"test-version",
 		"manager",
@@ -108,7 +108,7 @@ func TestDefaultContext(t *testing.T) {
 	}
 
 	if ctx.PipeDir != fmt.Sprintf("%s/.plumber", usr.HomeDir) ||
-		ctx.KubeSuffix != "k8s" || ctx.ManagerImage != "manager" ||
+		ctx.KubeSubdir != "k8s" || ctx.ManagerImage != "manager" ||
 		ctx.BootstrapDir != fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir) ||
 		ctx.ImageRepo != "plumber" || ctx.DockerIface != "docker0" ||
 		ctx.DockerHostEnv != "DOCKER_HOST" {
