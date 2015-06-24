@@ -64,8 +64,8 @@ Next, you'll need some data enhancers.
 ## Data enhancers
 For the "hello, world" demo of `plumber`, you will need to clone two repositories:
 
-    git clone github.com/qadium/plumber-hello
-    git clone github.com/qadium/plumber-host
+    git clone git@github.com:qadium/plumber-hello.git
+    git clone git@github.com:qadium/plumber-host.git
 
 The `plumber-hello` repository contains a piece of code that reads in a field `name` from an input JSON and adds a field `hello` that contains the text `Hello, {name}, my name is {my_name}`.
 
