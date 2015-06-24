@@ -1,4 +1,4 @@
-# Plumber
+# Plumber [![Build Status](https://travis-ci.org/qadium/plumber.svg)](https://travis-ci.org/qadium/plumber) [![Coverage Status](https://coveralls.io/repos/qadium/plumber/badge.svg)](https://coveralls.io/r/qadium/plumber)
 Plumber is a tool to facilitate **distributed data exploration**. It comes with a `plumber` command line tool to deploy and manage data enhancers on a [Kubernetes](https://github.com/GoogleCloudPlatform/kubernetes) cluster.
 
 Based on information provided in a `.plumb.yml` file, `plumber` can compose a set of enhancers such that their dependencies are satisfied and deploy the data processing pipeline to a Kubernetes cluster. At the moment, we only support a local deploy (with Docker) and a cloud deploy with Google Cloud.
@@ -188,7 +188,7 @@ GLOBAL OPTIONS:
 - (✓) `plumb start` on local docker instances
 - ~~`plumbd` as nothing more than docker wrapper~~
 - (✓) `plumb start` on GCE with kubernetes
-- unit tests
+- (✓) unit tests
 - bintray deploy?
 
 *v0.2.0*
@@ -196,6 +196,9 @@ GLOBAL OPTIONS:
 - `plumb bundle` runs automated unit tests
 - ~~`plumbd` handles dependency graphs~~
 - `plumb install` for different languages
+- custom / better error messages
+- basic type system
+- dynamic pipelines
 - automatic discovery of inputs and outputs based on test cases?
 
 *v0.3.0*
