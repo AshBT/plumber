@@ -1,12 +1,12 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"os/user"
-	"net"
-	"errors"
-	"net/url"
 	"strings"
 )
 
@@ -19,11 +19,11 @@ type Context struct {
 	ManagerImage  string // the desired image name for bootstrapping
 	BootstrapDir  string // the directory to use for bootstrapping
 	ImageRepo     string // the prefix to use for images
-	DockerCmd	  string // the command for running `docker` in a shell
+	DockerCmd     string // the command for running `docker` in a shell
 	DockerIface   string // the docker network interface name
 	DockerHostEnv string // the DOCKER_HOST environment variable
-	GcloudCmd	  string // the command for running `gcloud` in a shell
-	KubectlCmd 	  string // the command for running `kubectl` in a shell
+	GcloudCmd     string // the command for running `gcloud` in a shell
+	KubectlCmd    string // the command for running `kubectl` in a shell
 }
 
 const plumberDir = ".plumber"

@@ -3,11 +3,11 @@ package cli_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/qadium/plumber/shell"
 	"github.com/qadium/plumber/cli"
+	"github.com/qadium/plumber/shell"
 	"net/http"
-	"testing"
 	"syscall"
+	"testing"
 	"time"
 )
 

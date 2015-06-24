@@ -1,13 +1,13 @@
 package cli_test
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/qadium/plumber/shell"
 	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
-	"bytes"
 )
 
 // TODO: this test code should live in the language-dependent repository

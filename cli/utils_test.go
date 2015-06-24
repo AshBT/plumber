@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
-	"testing"
 	"runtime"
 	"strings"
+	"testing"
 )
 
 const testPlumberDir = "foo"
