@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -127,6 +126,7 @@ func (d *Context) GetDockerHost() (string, error) {
 				return ipv4.String(), nil
 			}
 		}
+		return "", fmt.Errorf("Could not get IPv4 gateway for device '%s'", d.DockerIface)
 	} else {
 		// docker host is usually in the form of [http:// | unix://]IP:PORT
 		hostUrl, err := url.Parse(hostIp)
@@ -136,7 +136,6 @@ func (d *Context) GetDockerHost() (string, error) {
 		hostIp = strings.Split(hostUrl.Host, ":")[0]
 		return hostIp, nil
 	}
-	return "", errors.New("Unable to obtain docker host")
 }
 
 func versionString() string {
