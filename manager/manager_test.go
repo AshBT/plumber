@@ -83,7 +83,7 @@ func TestHandlerForwardsData(t *testing.T) {
 }
 
 func TestMainRunnerExitsGracefully(t *testing.T) {
-	// set the interrupt handler to go off after 50 milliseconds
+	// set the interrupt handler to go off after 1 second
 	go func() {
 		time.Sleep(1 * time.Second)
 		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
