@@ -58,7 +58,7 @@ func (ctx *Context) Bootstrap() error {
 	}
 	log.Printf("    Done")
 
-	if err := shell.RunAndLog("docker",
+	if err := shell.RunAndLog(ctx.DockerCmd,
 		"run",
 		"--rm",
 		"-v",

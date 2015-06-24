@@ -164,7 +164,7 @@ func (ctx *Context) Bundle(bundlePath string) error {
 	log.Printf("    Done.")
 
 	log.Printf(" |  Building container.")
-	err = shell.RunAndLog("docker", "build", "--pull", "-t", ctx.GetImage(bundleConfig.Name), "-f", dockerfile.Name(), bundlePath)
+	err = shell.RunAndLog(ctx.DockerCmd, "build", "--pull", "-t", ctx.GetImage(bundleConfig.Name), "-f", dockerfile.Name(), bundlePath)
 	if err != nil {
 		return err
 	}

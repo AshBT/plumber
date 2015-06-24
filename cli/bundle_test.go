@@ -65,13 +65,13 @@ func TestBundle(t *testing.T) {
 	if err != nil {
 		t.Errorf("Bundle: Got an unxpected error while bundling, '%v'", err)
 	}
-	defer shell.RunAndLog("docker", "rmi", ctx.GetImage("foobar"))
+	defer shell.RunAndLog(ctx.DockerCmd, "rmi", ctx.GetImage("foobar"))
 
 	// run the container and check that it increments the input
-	if err := shell.RunAndLog("docker", "run", "-d", "-p", "9800:9800", "--name", "foobar", ctx.GetImage("foobar")); err != nil {
+	if err := shell.RunAndLog(ctx.DockerCmd, "run", "-d", "-p", "9800:9800", "--name", "foobar", ctx.GetImage("foobar")); err != nil {
 		t.Errorf("Bundle: Got an error during docker run: '%v'", err)
 	}
-	defer shell.RunAndLog("docker", "rm", "-f", "foobar")
+	defer shell.RunAndLog(ctx.DockerCmd, "rm", "-f", "foobar")
 	// wait a bit for the container to come up
 	time.Sleep(1 * time.Second)
 
