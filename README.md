@@ -77,6 +77,7 @@ First, we'll demonstrate the `plumber bundle` command. After cloning the reposit
 This will package the *directory* into a Docker container which you can run locally with `docker run -p 9800:9800 plumber/hello`.
 
 If you're on a Linux machine, `curl localhost:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` 
+
 If you're on an OSX machine, get your docker ip address with `boot2docker ip` and then `curl [boot2docker ip]:9800 -d '{"name": "qadium"}' -H 'Content-Type: application/json'` 
 
 The output of the curl command should be:
