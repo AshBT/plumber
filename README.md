@@ -8,10 +8,12 @@ Data processing tasks for ETL or data science typically involve data cleaning, d
 
 This process can be thought of as a series of operations or transformations on raw data: we term these *enhancers*. Each enhancer can be as simple (e.g., a regex match) or as complex (e.g., a database lookup) as necessary to provide additional data. The only requirement for enhancers is that they take a map in and provide a map out.
 
-### Prerequisites to Installation
-You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
+
 
 ## Installation
+### Prerequisites
+You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
+### Download and Install
 You can download the latest binaries (for Linux and OSX) [here](https://github.com/qadium/plumber/releases).
 After downloading, rename the binary to `plumber` and make sure the binary can be located through your `$PATH` variable.
 
