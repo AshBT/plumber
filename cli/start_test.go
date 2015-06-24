@@ -81,7 +81,7 @@ func TestStart(t *testing.T) {
 	const projectId = "gce-project-id"
 	err = ctx.Start(testPipeline, projectId)
 	if err != nil {
-		t.Errorf("hmmmmmmm '%v'", err)
+		t.Errorf("TestStart: [remote] '%v'", err)
 	}
 	remoteImage := fmt.Sprintf("gcr.io/%s/plumber-%s", projectId, "manager")
 	defer shell.RunAndLog("docker", "rmi", remoteImage)
@@ -95,6 +95,6 @@ func TestStartNonExistentPipeline(t *testing.T) {
 
 	err := ctx.Start("", "")
 	if err == nil || err.Error() != fmt.Sprintf("stat %s/: no such file or directory", ctx.PipeDir) {
-		t.Errorf("TestStartNonExistentPipeline: did not get expected error '%s', '%v'", ctx.PipeDir, err)
+		t.Errorf("TestStartNonExistentPipeline: did not get expected error, '%v'", err)
 	}
 }
