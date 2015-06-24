@@ -1,3 +1,6 @@
+// Plumber is a cli tool for creating distributed data processing
+// pipelines. The main package only contains the driver for the cli
+// tool.
 package main
 
 import (
