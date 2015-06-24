@@ -319,5 +319,4 @@ func (ctx *Context) Start(pipeline, gce string) error {
 		log.Printf(" |  Running local pipeline.")
 		return localStart(ctx, sortedPipeline)
 	}
-	return nil
 }
