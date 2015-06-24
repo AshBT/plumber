@@ -23,4 +23,4 @@ const version = "0.1.0"
 
 // This will be rendered as Version-VersionPrerelease, unless
 // VersionPrerelease is empty (in which case it's a release)
-const versionPrerelease = "beta"
+const versionPrerelease = "dev"
