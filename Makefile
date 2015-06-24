@@ -12,8 +12,6 @@ install: bindata/bindata.go
 	./scripts/do.sh install
 
 test: build
-	alias gcloud=true
-	alias kubectl=true
 	go test -v -bench=. -cover ./...
 
 clean:
