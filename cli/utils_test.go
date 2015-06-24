@@ -38,8 +38,11 @@ func NewTestContext(t *testing.T) (*cli.Context, string) {
 		"manager",
 		fmt.Sprintf("%s/%s", tempDir, testBootstrapDir),
 		"plumber_test",
+		"docker",
 		"docker0",
 		"DOCKER_HOST",
+		"true",
+		"true",
 	}
 	return d, tempDir
 }
@@ -110,8 +113,9 @@ func TestDefaultContext(t *testing.T) {
 	if ctx.PipeDir != fmt.Sprintf("%s/.plumber", usr.HomeDir) ||
 		ctx.KubeSubdir != "k8s" || ctx.ManagerImage != "manager" ||
 		ctx.BootstrapDir != fmt.Sprintf("%s/.plumber-bootstrap", usr.HomeDir) ||
-		ctx.ImageRepo != "plumber" || ctx.DockerIface != "docker0" ||
-		ctx.DockerHostEnv != "DOCKER_HOST" {
+		ctx.ImageRepo != "plumber" || ctx.DockerCmd != "docker" ||
+		ctx.DockerIface != "docker0" || ctx.DockerHostEnv != "DOCKER_HOST" ||
+		ctx.GcloudCmd != "gcloud" || ctx.KubectlCmd != "kubectl" {
 		t.Errorf("DefaultContext: '%v' was not expected.", ctx)
 	}
 }

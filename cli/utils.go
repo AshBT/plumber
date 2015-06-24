@@ -12,15 +12,18 @@ import (
 
 // Useful information for the plumber CLI tool goes here
 type Context struct {
-	PipeDir      string // the directory to store plumber pipelines
-	KubeSubdir   string // the suffix to use to store kubernetes files
-	GitCommit    string // the current git commit
-	Version      string // the current version
-	ManagerImage string // the desired image name for bootstrapping
-	BootstrapDir string // the directory to use for bootstrapping
-	ImageRepo    string // the prefix to use for images
-	DockerIface  string // the docker network interface name
+	PipeDir       string // the directory to store plumber pipelines
+	KubeSubdir    string // the suffix to use to store kubernetes files
+	GitCommit     string // the current git commit
+	Version       string // the current version
+	ManagerImage  string // the desired image name for bootstrapping
+	BootstrapDir  string // the directory to use for bootstrapping
+	ImageRepo     string // the prefix to use for images
+	DockerCmd	  string // the command for running `docker` in a shell
+	DockerIface   string // the docker network interface name
 	DockerHostEnv string // the DOCKER_HOST environment variable
+	GcloudCmd	  string // the command for running `gcloud` in a shell
+	KubectlCmd 	  string // the command for running `kubectl` in a shell
 }
 
 const plumberDir = ".plumber"
@@ -49,8 +52,11 @@ func NewDefaultContext() (*Context, error) {
 		"manager",
 		fmt.Sprintf("%s/%s", usr.HomeDir, bootstrapDir),
 		"plumber",
+		"docker",
 		"docker0",
 		"DOCKER_HOST",
+		"gcloud",
+		"kubectl",
 	}
 	return d, nil
 }
