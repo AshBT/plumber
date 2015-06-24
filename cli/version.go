@@ -4,8 +4,8 @@ package cli
 // with -ldflags
 var GitCommit string
 
-const version = "0.0.1"
+const version = "0.1.0"
 
 // This will be rendered as Version-VersionPrerelease, unless
 // VersionPrerelease is empty (in which case it's a release)
-const versionPrerelease = "dev"
+const versionPrerelease = "beta"
