@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"testing"
 	"runtime"
+	"strings"
 )
 
 const testPlumberDir = "foo"
@@ -161,7 +162,7 @@ func TestGetDockerHostFail(t *testing.T) {
 	if hostIp != "" || err == nil {
 		t.Errorf("GetDockerHostFail: did not fail as expected")
 	}
-	if err.Error() != "no such network interface" {
+	if !strings.Contains(err.Error(), "no such network interface") {
 		t.Errorf("GetDockerHostFail: got an unexpected error '%v'", err)
 	}
 }
