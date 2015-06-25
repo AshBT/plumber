@@ -44,40 +44,36 @@ Developers create enhancers and linkers by adhering to a simple programmatic int
 
 The `plumber` tool will take care of creating the necessary wrappers to enable use in the `plumber` ecosystem.
 
-## License
+## Alternatives
+We have compiled a list of projects that we believe to be similar to Plumber. Note that these comparisons may not be complete; please let us know (via an issue) if you believe we have omitted anything.
 
-Copyright 2015 Qadium, Inc.
-
-Licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-# Alternatives
-## [Storm](https://storm.apache.org/)
+### [Storm](https://storm.apache.org/)
 A Storm topology is written programmatically in Java and compiled. A Plumber topology is built from provided dependency information from the constituent enhancers. It is dynamic: small changes to the topology can be deployed without restarting the pipeline.
 
 Storm supports bolts to process data and spouts to produce or consume data. Plumber only supports the equvialent of Storm bolts (Plumber enhancers). It does not have the ability to manage data sources or sinks.
 
 Storm bolts support multiple languages with Java as a first-class citizen. Bolts written in Python are typically executed using subprocesses. Plumber uses Docker containers to host each enhancer. While only Python is supported at the moment, enhancers can ideally be written in any language and mixed together in a pipeline.
 
-## [Docker Compose](https://docs.docker.com/compose/) (aka Fig)
+### [Docker Compose](https://docs.docker.com/compose/) (aka Fig)
 Docker Compose is designed for running generic services in Docker containers as a single application (e.g., a webapp with a database). Plumber is specifically for running Docker containers as a data processing pipeline.
 
 Docker Compose provides full control of the containers and exposes all Docker options. Plumber builds containers using a template that adheres to a (to-be-determined) Plumber standard for enhancers and does not require any familiarity with Docker or Dockerfiles.
 
-## [Luigi](https://github.com/spotify/luigi)
+### [Luigi](https://github.com/spotify/luigi)
 Luigi is a data processing pipeline for handling batch jobs. Plumber is a distributed data processing pipeline for handling streaming jobs.
 
 Luigi topologies are written in Python with a provided API. Plumber does not have a related API and its topologies are decentralized.
 
 Luigi is designed to stitch together several mainstream data processing tools in a cluster. Plumber is designed to work on Kubernetes.
 
-# Getting started with a Hello, World app
+## Getting started with a Hello, World app
 First, you'll need to bootstrap `plumber` by creating a `manager` container.
 
     plumber bootstrap
 
 Next, you'll need some data enhancers.
 
-## Data enhancers
+### Data enhancers
 For the "hello, world" demo of `plumber`, you will need to clone two repositories:
 
     git clone git@github.com:qadium/plumber-hello.git
@@ -103,7 +99,7 @@ The output of the curl command should be:
 
 You can do the same with `plumber-host`. First, navigate to its directory and run `plumber bundle .`. You can run a container locally with `docker run -p 9800:9800 plumber/host`. You can again use `curl` to send data to the server and see its response.
 
-## Pipelines
+### Pipelines
 We now create a pipeline
 
     plumber create foo
@@ -130,7 +126,7 @@ If you're running on OSX, replace the curl command with
 
     curl `boot2docker ip`:9800 -d '{"hostname": "qadium.com"}' -H 'Content-Type: application/json'
 
-## Run on Google Cloud
+### Run on Google Cloud
 Running on Google Cloud is very straightforward. First, ensure you have an account and have installed the Google Cloud SDK. Log in with
 
     gcloud auth login
@@ -149,10 +145,10 @@ Finally, start your pipeline on Google Cloud with
 
 The `PROJECT-ID` for your cloud can be found from the Google Cloud developer console.
 
-## A note on data sources and sinks
+### A note on data sources and sinks
 Data sources and sinks do not fit nicely into our model of "JSON in, JSON out", since a data source is essentially "nothing in, JSON out," and a data sink is "JSON in, nothing out." While we plan to provide support for creating data sources and sinks, these can be emulated with simple HTTP get requests (data source) and proper handling of the response (data sink).
 
-# Plumber configuration file
+## Plumber configuration file
 A sample `.plumb.yml` file is
 ```YAML
 language: python  # plumb currently only supports python 2
@@ -175,7 +171,7 @@ install:
   - pip install -r requirements.txt
 ```
 
-# Command line tool
+## Command line tool
 Here's the help-text for `plumber`
 ```
 NAME:
@@ -203,7 +199,7 @@ GLOBAL OPTIONS:
    --version, -v	print the version
 ```
 
-# Roadmap
+## Roadmap
 *v0.1.0*
 
 - (✓) `plumb bundle` functionality for Python
@@ -228,3 +224,8 @@ GLOBAL OPTIONS:
 
 - `plumb compile`?
 
+## License
+
+Copyright 2015 Qadium, Inc.
+
+Licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
