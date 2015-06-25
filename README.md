@@ -64,7 +64,7 @@ Luigi topologies are written in Python with a provided API. Plumber does not hav
 
 Luigi is designed to stitch together several mainstream data processing tools in a cluster. Plumber is designed to work on Kubernetes.
 
-# Getting Started with a Hello, World App
+# Getting started with a Hello, World app
 First, you'll need to bootstrap `plumber` by creating a `manager` container.
 
     plumber bootstrap
