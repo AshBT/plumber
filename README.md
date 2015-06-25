@@ -8,22 +8,17 @@ Data processing tasks for ETL or data science typically involve data cleaning, d
 
 This process can be thought of as a series of operations or transformations on raw data: we term these *enhancers*. Each enhancer can be as simple (e.g., a regex match) or as complex (e.g., a database lookup) as necessary to provide additional data. The only requirement for enhancers is that they take a map in and provide a map out.
 
-
-
 ## Installation
 ### Prerequisites
 You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
-### Download and Install
-You can download the latest binaries (for Linux and OSX) [here](https://github.com/qadium/plumber/releases).
-After downloading, rename the binary to `plumber` and make sure the binary can be located through your `$PATH` variable.
 
-For instance, if you downloaded the binary, renamed it to `plumber`, and copied it to `/home/directory`, then adding `export PATH=$PATH:/home/directory` to your `.profile` should enable your terminal to locate the `plumber` binary.
+### Download and install
+The simplest installation method is to [download]((https://github.com/qadium/plumber/releases) the latest binaries (for Linux and OSX). After downloading the appropriate tarball for your system, unpack the tarball to a location that is accessible by the `$PATH` variable (e.g., `/usr/local/bin`):
+```
+tar -xvzf plumber_MY_ARCH.tar.gz -C /usr/local/bin
+```
 
-You can also use
-
-    go get github.com/qadium/plumber
-
-However, this will not display the git SHA1 information with `plumber version`.
+Alternatively, you can unpack it to a different directory, say, `/home/directory`, and add `export PATH=$PATH:/home/directory` to your `.bashrc` (Linux) or `.profile` (OSX), restart the terminal, and you should be able to use the `plumber` binary.
 
 ### Developers
 For those wishing to hack on `plumber`, you'll need
@@ -35,23 +30,39 @@ For those wishing to hack on `plumber`, you'll need
 - kubectl (via gcloud)
 - make
 
-Run `make test`. This will run the commands and shell out to `git` and `docker` when necessary. It will also create folders if needed.
+To get the source and install the binary, you can use
 
-## Enhancers and Linkers
+    go get github.com/qadium/plumber
+
+However, this will not display the git SHA1 information with `plumber version`.
+
+To run test cases, run `make test` under `$GOPATH/src/github.com/qadium/plumber`. This will run the commands and shell out to `git` and `docker` when necessary. It will also create folders if needed.
+
+## Enhancers and linkers
 
 Developers create enhancers and linkers by adhering to a simple programmatic interface and providing a YAML config file in their repository. The requirement is simple: implement a (public) `run` function that takes a map (or dictionary) in and returns a new map.
 
 The `plumber` tool will take care of creating the necessary wrappers to enable use in the `plumber` ecosystem.
 
-## Testing
-By decoupling the transformations on each piece of data, we can also programmatically test and document enhancers and linkers. This gives end-users a high level of assurance that their data processing pipeline is correct, preventing garbage in and garbage out.
-
 # Alternatives
-## Storm
-Storm topologies... very similar, not as dynamic. Not container based. Performance?
+## [Storm](https://storm.apache.org/)
+A Storm topology is written programmatically in Java and compiled. A Plumber topology is built from provided dependency information from the constituent enhancers. It is dynamic: small changes to the topology can be deployed without restarting the pipeline.
 
-## Docker Compose (aka Fig)
-For more generic services; explicit linking. Full control of docker containers.
+Storm supports bolts to process data and spouts to produce or consume data. Plumber only supports the equvialent of Storm bolts (Plumber enhancers). It does not have the ability to manage data sources or sinks.
+
+Storm bolts support multiple languages with Java as a first-class citizen. Bolts written in Python are typically executed using subprocesses. Plumber uses Docker containers to host each enhancer. While only Python is supported at the moment, enhancers can ideally be written in any language and mixed together in a pipeline.
+
+## [Docker Compose](https://docs.docker.com/compose/) (aka Fig)
+Docker Compose is designed for running generic services in Docker containers as a single application (e.g., a webapp with a database). Plumber is specifically for running Docker containers as a data processing pipeline.
+
+Docker Compose provides full control of the containers and exposes all Docker options. Plumber builds containers using a template that adheres to a (to-be-determined) Plumber standard for enhancers and does not require any familiarity with Docker or Dockerfiles.
+
+## [Luigi](https://github.com/spotify/luigi)
+Luigi is a data processing pipeline for handling batch jobs. Plumber is a distributed data processing pipeline for handling streaming jobs.
+
+Luigi topologies are written in Python with a provided API. Plumber does not have a related API and its topologies are decentralized.
+
+Luigi is designed to stitch together several mainstream data processing tools in a cluster. Plumber is designed to work on Kubernetes.
 
 # Getting Started with a Hello, World App
 First, you'll need to bootstrap `plumber` by creating a `manager` container.
@@ -168,10 +179,10 @@ USAGE:
    plumber [global options] command [command options] [arguments...]
 
 VERSION:
-   0.0.1-dev
+   0.1.0-beta
 
-AUTHOR(S):
-
+AUTHOR(S): 
+   
 COMMANDS:
    add		add a plumber-enabled bundle to a pipeline
    create	create a pipeline managed by plumber
@@ -180,7 +191,7 @@ COMMANDS:
    bundle	bundle a node for use in a pipeline managed by plumber
    version	more detailed version information for plumber
    help, h	Shows a list of commands or help for one command
-
+   
 GLOBAL OPTIONS:
    --help, -h		show help
    --version, -v	print the version
