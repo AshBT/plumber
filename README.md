@@ -44,6 +44,12 @@ Developers create enhancers and linkers by adhering to a simple programmatic int
 
 The `plumber` tool will take care of creating the necessary wrappers to enable use in the `plumber` ecosystem.
 
+## License
+
+Copyright 2015 Qadium, Inc.
+
+Licensed under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
 # Alternatives
 ## [Storm](https://storm.apache.org/)
 A Storm topology is written programmatically in Java and compiled. A Plumber topology is built from provided dependency information from the constituent enhancers. It is dynamic: small changes to the topology can be deployed without restarting the pipeline.
@@ -221,3 +227,4 @@ GLOBAL OPTIONS:
 *v0.3.0*
 
 - `plumb compile`?
+
