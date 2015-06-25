@@ -13,7 +13,7 @@ This process can be thought of as a series of operations or transformations on r
 You'll need `git` and `docker` installed on the command line. For use with Google Cloud, you'll need the the Google Cloud SDK command line tools. You'll also need to make sure you installed kubernetes via `gcloud`.
 
 ### Download and install
-The simplest installation method is to [download]((https://github.com/qadium/plumber/releases) the latest binaries (for Linux and OSX). After downloading the appropriate tarball for your system, unpack the tarball to a location that is accessible by the `$PATH` variable (e.g., `/usr/local/bin`):
+The simplest installation method is to [download](https://github.com/qadium/plumber/releases) the latest binaries (for Linux and OSX). After downloading the appropriate tarball for your system, unpack the tarball to a location that is accessible by the `$PATH` variable (e.g., `/usr/local/bin`):
 ```
 tar -xvzf plumber_MY_ARCH.tar.gz -C /usr/local/bin
 ```
