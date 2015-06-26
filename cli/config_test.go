@@ -52,7 +52,6 @@ inputs:
     type: string
 outputs:
   - name: b
-    type: string
 extra: field`
 
 // bundle with missing fields
@@ -155,7 +154,7 @@ func TestParseOptBundle(t *testing.T) {
 			cli.Field{
 				Name:        "b",
 				Description: "",
-				Type:        "string",
+				Type:        "",
 			},
 		},
 		Env:     nil,
