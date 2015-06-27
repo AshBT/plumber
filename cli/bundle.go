@@ -56,6 +56,7 @@ CMD ["python", "{{ .Wrapper }}"]
 
 const wrapperTemplate = `
 import {{ .Plumber.Name }}
+import datetime
 from bottle import post, route, run, request, HTTPResponse
 
 __INFO = {'bundle': '{{ .Plumber.Name }}',
@@ -67,48 +68,88 @@ __INFO = {'bundle': '{{ .Plumber.Name }}',
   }
 }
 
+# set of expected output fields
+__EXPECTED_OUTPUTS = set([{{ range .Plumber.Outputs }}"""{{ .Name }}""",{{end}}])
+
 @route('/info')
 def info():
-    return __INFO
+	return __INFO
 
 @post('/')
 def index():
-    data = request.json
+	data = request.json
 
-    # validate input data
-    if data is None:
-        raise HTTPResponse(
-            body = "No JSON data received; did you forget to set 'Content-Type: application/json'?",
-            status = 400
-        )
+	# validate input data
+	if data is None:
+		raise HTTPResponse(
+		    body = "No JSON data received; did you forget to set 'Content-Type: application/json'?",
+		    status = 400
+		)
 
-	# Instead of throwing errors when required fields are missing,
-	# maybe we just return the payload instead and add a note?
-    {{ range .Plumber.Inputs }}
-    if not '{{ .Name }}' in data:
-        raise HTTPResponse(
-            body = "Missing required '{{ .Name }}' field in JSON data.",
-            status = 400
-        )
-    {{ end }}
-    # run the enhancer
-    output = {{ .Plumber.Name }}.run(data)
+	# first, get the program data
+	program_data = data.get("data", None)
+	if program_data is None:
+		raise HTTPResponse(
+			body = "Unexpected format for an enhancer; did you forget to wrap your data in a 'data' field?",
+			status = 400
+		)
 
-    # validate output data
-    {{ range .Plumber.Outputs }}
-    if not '{{ .Name }}' in output:
-        raise HTTPResponse(
-            body = "Unexpected output; missing '{{ .Name }}' field.",
-            status = 501
-        )
-    {{ end }}
+	# ensure its metadata, errors, and history fields are set
+	if "metadata" not in data:
+		data["metadata"] = {}
+	if "errors" not in data["metadata"]:
+		data["metadata"]["errors"] = []
+	if "history" not in data["metadata"]:
+		data["metadata"]["history"] = []
 
-	# Instead of assuming the output contains a superset of the input
-	# fields, we can add the input fields to the output here? It's a
-	# performance hit, but it means the output is *always* a superset
-	# of the input.
+	# now, get only the fields needed for this enhancer
+	input = {
+		{{ range .Plumber.Inputs }}"""{{ .Name }}""": program_data.get("""{{ .Name }}""", None), {{ end }}
+	}
 
-    return output
+	# run the enhancer
+	try:
+		output = {{ .Plumber.Name }}.run(input)
+	except Exception as e:
+		error = {
+			"bundle-name": """{{ .Plumber.Name }}""",
+			"timestamp": datetime.datetime.now().isoformat(),
+			"message": str(e)
+		}
+		data["metadata"]["errors"].append(error)
+		return data
+
+	# discard any updates to the inputs
+	{{ range .Plumber.Inputs }}
+	output.pop("""{{ .Name }}""")
+	{{ end }}
+
+	# update the program data
+	for key in output:
+		if key not in __EXPECTED_OUTPUTS:
+			error = {
+				"bundle-name": """{{ .Plumber.Name }}""",
+				"timestamp": datetime.datetime.now().isoformat(),
+				"message": "Field '{}' was not in set of expected outputs.".format(key)
+			}
+			data["metadata"]["errors"].append(error)
+			continue
+		history = {
+			"bundle-name": """{{ .Plumber.Name }}""",
+			"field-name": key
+		}
+		if key in data["data"]:
+			history["action"] = "update"
+			history["prev"] = data["data"][key]
+			history["timestamp"] = datetime.datetime.now().isoformat()
+		else:
+			history["action"] = "new"
+			history["prev"] = None
+			history["timestamp"] = datetime.datetime.now().isoformat()
+
+		data["data"][key] = output[key]
+		data["metadata"]["history"].append(history)
+	return data
 
 run(host='0.0.0.0', port=9800)
 `

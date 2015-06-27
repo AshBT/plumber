@@ -21,6 +21,7 @@ import (
 	"github.com/qadium/plumber/cli"
 	"github.com/qadium/plumber/shell"
 	"net/http"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -73,15 +74,15 @@ func TestStart(t *testing.T) {
 		if err != nil {
 			t.Errorf("TestStart: Got an error getting the docker host: '%v'", err)
 		}
-		resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"a": "trusty"}`))
+		resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"data": {"a": "trusty"}}`))
 		if err != nil {
 			t.Error(err)
 		}
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(resp.Body)
 		result := buf.String()
-		if result != `{"a": "trusty", "b": "echo trusty"}` {
-			t.Errorf("TestStart: Got '%s'; did not get expected response", result)
+		if !strings.Contains(result, `{"a": "trusty", "b": "echo trusty"}`) {
+			t.Errorf("TestStart: Got '%s'; did not contain expected response", result)
 		}
 	}()
 

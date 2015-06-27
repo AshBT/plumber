@@ -21,6 +21,7 @@ import (
 	"github.com/qadium/plumber/shell"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 )
@@ -98,14 +99,14 @@ func TestBundle(t *testing.T) {
 	}
 
 	// second, send over some JSON and verify result
-	resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"a": "trusty"}`))
+	resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"data": {"a": "trusty"}}`))
 	if err != nil {
 		t.Error(err)
 	}
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 	result := buf.String()
-	if result != `{"a": "trusty", "b": "echo trusty"}` {
-		t.Errorf("Bundle: Got '%s'; did not get expected response", result)
+	if !strings.Contains(result, `{"a": "trusty", "b": "echo trusty"}`) {
+		t.Errorf("Bundle: Got '%s'; did not contain expected response", result)
 	}
 }
