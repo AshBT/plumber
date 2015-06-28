@@ -174,6 +174,11 @@ func (ctx *Context) Bundle(bundlePath string) error {
 	log.Printf(" |  Parsing bundle config.")
 	bundleConfig, err := ParseBundleFromDir(bundlePath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			log.Printf("    Could not find '%s' in path '%s'.", bundleConfig, bundlePath)
+			log.Printf("    Did not bundle '%s'.", bundlePath)
+			return nil
+		}
 		return err
 	}
 	log.Printf("    %v", bundleConfig)

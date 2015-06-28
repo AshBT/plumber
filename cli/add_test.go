@@ -80,9 +80,9 @@ func TestAddWithoutBundle(t *testing.T) {
 		t.Errorf("TestAddWithoutBundle: '%v'", err)
 	}
 
-	// add nonexitent bundle to the pipeline (should give an error)
+	// add nonexistent bundle to the pipeline (should skip without an error)
 	err := ctx.Add("add-test-no-bundle", tempDir)
-	if err == nil || err.Error() != fmt.Sprintf("open %s/.plumb.yml: no such file or directory", tempDir) {
-		t.Errorf("TestAddWithoutBundle: did not get an expected error!")
+	if err != nil {
+		t.Errorf("TestAddWithoutBundle: did not expect to get an error, '%v'!", err)
 	}
 }

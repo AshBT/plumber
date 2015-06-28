@@ -16,6 +16,7 @@
 package cli
 
 import (
+	"os"
 	"fmt"
 	"github.com/qadium/plumber/shell"
 	"gopkg.in/yaml.v2"
@@ -25,7 +26,7 @@ import (
 
 func addOne(ctx *Context, pipeline string, bundle string) error {
 	log.Printf(" |  Adding '%s' to '%s'.", bundle, pipeline)
-	defer log.Printf("    Added '%s'.", bundle)
+	defer log.Printf("    Processed '%s'.", bundle)
 
 	path, err := ctx.GetPipeline(pipeline)
 	if err != nil {
@@ -33,15 +34,20 @@ func addOne(ctx *Context, pipeline string, bundle string) error {
 	}
 
 	log.Printf(" |  Parsing bundle config.")
-	bundleConfig, err := ParseBundleFromDir(bundle)
+	bundleCfg, err := ParseBundleFromDir(bundle)
 	if err != nil {
+		if os.IsNotExist(err) {
+			log.Printf("    Could not find '%s' in path '%s'.", bundleConfig, bundle)
+			log.Printf("    Skipping '%s'.", bundle)
+			return nil
+		}
 		return err
 	}
 	log.Printf("    Done.")
 
-	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", bundleConfig.Name)
-	config := fmt.Sprintf("%s/%s.yml", path, bundleConfig.Name)
-	bytes, err := yaml.Marshal(&bundleConfig)
+	log.Printf(" |  Copying `.plumber.yml` config to `%s.yml`.", bundleCfg.Name)
+	config := fmt.Sprintf("%s/%s.yml", path, bundleCfg.Name)
+	bytes, err := yaml.Marshal(&bundleCfg)
 	if err != nil {
 		return err
 	}
@@ -51,13 +57,13 @@ func addOne(ctx *Context, pipeline string, bundle string) error {
 	}
 	log.Printf("    Done.")
 
-	log.Printf(" |  Adding `%s.yml` to version control.", bundleConfig.Name)
+	log.Printf(" |  Adding `%s.yml` to version control.", bundleCfg.Name)
 
 	if err := shell.RunAndLog("git", "-C", path, "add", config); err != nil {
 		return err
 	}
 
-	message := fmt.Sprintf("Updated '%s' config.", bundleConfig.Name)
+	message := fmt.Sprintf("Updated '%s' config.", bundleCfg.Name)
 	if err := shell.RunAndLog("git", "-C", path, "commit", "-m", message, "--author", "\"Plumber Bot <plumber@qadium.com>\""); err != nil {
 		return err
 	}
