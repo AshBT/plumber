@@ -11,7 +11,7 @@ log = logging.getLogger("link.plugins.twitter")
 def is_rate_limited(error):
 	return isinstance(error.message, list) and \
 		len(error.message) == 1 and \
-		isinstance(error.message, dict) and \
+		isinstance(error.message[0], dict) and \
 		error.message[0]['code'] == 88
 
 def with_retries(f, *args, **kwargs):
