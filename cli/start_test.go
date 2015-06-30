@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/qadium/plumber/cli"
 	"github.com/qadium/plumber/shell"
+	"github.com/qadium/plumber/graph"
 	"net/http"
 	"strings"
 	"syscall"
@@ -113,4 +114,51 @@ func TestStartNonExistentPipeline(t *testing.T) {
 	if err == nil || err.Error() != fmt.Sprintf("stat %s/: no such file or directory", ctx.PipeDir) {
 		t.Errorf("TestStartNonExistentPipeline: did not get expected error, '%v'", err)
 	}
+}
+
+func TestBundlesToGraph(t *testing.T) {
+	// type Bundle struct {
+	// 	Language string
+	// 	Name     string
+	// 	Inputs   []Field  `yaml:",flow"`
+	// 	Outputs  []Field  `yaml:",flow"`
+	// 	Env      []string `yaml:",flow,omitempty"`
+	// 	Install  []string `yaml:",flow,omitempty"`
+	// }
+	bundles := []*cli.Bundle{
+		&cli.Bundle{"python", "a",
+			[]cli.Field{cli.Field{"text", "", "",},},
+			[]cli.Field{cli.Field{"dude", "", "",},},
+			[]string{},
+			[]string{},
+		},
+		&cli.Bundle{"python", "b",
+			[]cli.Field{cli.Field{"id", "", "",},},
+			[]cli.Field{cli.Field{"text", "", "",},},
+			[]string{},
+			[]string{},
+		},
+		&cli.Bundle{"python", "c",
+			[]cli.Field{cli.Field{"text", "", "",},},
+			[]cli.Field{cli.Field{"bar", "", "",},},
+			[]string{},
+			[]string{},
+		},
+		&cli.Bundle{"python", "d",
+			[]cli.Field{cli.Field{"id", "", "",},cli.Field{"text", "", "",}, },
+			[]cli.Field{cli.Field{"foo", "", "",},},
+			[]string{},
+			[]string{},
+		},
+	}
+
+	nodes := cli.BundlesToGraph(bundles)
+	sorted, err := graph.ReverseTopoSort(nodes)
+	if err != nil {
+		t.Errorf("BundlesToGraph: Unexpected error '%v'", err)
+	}
+	if sorted[0] != "a" || sorted[1] != "c" || sorted[2] != "d" || sorted[3] != "b" {
+		t.Errorf("BundlesToGraph: Did not properly handle dependencies, reverse sorted: '%v'.", sorted)
+	}
+
 }

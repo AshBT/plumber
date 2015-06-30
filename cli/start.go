@@ -54,23 +54,25 @@ type kubeData struct {
 	Args           []string
 }
 
-func bundlesToGraphs(bundles []*Bundle) []*graph.Node {
+func BundlesToGraph(bundles []*Bundle) []*graph.Node {
 	nodes := make([]*graph.Node, len(bundles))
 	// this map maps inputs to the index of the node that uses it
-	m := make(map[string]int)
+	m := make(map[string][]int)
 
 	// build a map to create the DAG
 	for i, bundle := range bundles {
 		nodes[i] = graph.NewNode(bundle.Name)
 		for _, input := range bundle.Inputs {
-			m[input.Name] = i
+			m[input.Name] = append(m[input.Name], i)
 		}
 	}
 
 	for i, bundle := range bundles {
 		for _, output := range bundle.Outputs {
 			if v, ok := m[output.Name]; ok {
-				nodes[i].AddChildren(nodes[v])
+				for _, child := range v {
+					nodes[i].AddChildren(nodes[child])
+				}
 			}
 		}
 	}
@@ -279,7 +281,7 @@ func (ctx *Context) Start(pipeline, gce string) error {
 		}
 	}
 
-	g := bundlesToGraphs(ctxs)
+	g := BundlesToGraph(ctxs)
 	sortedPipeline, err := graph.ReverseTopoSort(g)
 	if err != nil {
 		return err
