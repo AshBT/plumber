@@ -33,7 +33,11 @@ type templateContext struct {
 // a standalone file in the future, so we can add different language
 // types.
 const dockerfileTemplate = `
+{{ if .Plumber.Image }}
+FROM {{ .Plumber.Image }}
+{{ else }}
 FROM google/python
+{{ end }}
 
 RUN mkdir -p /usr/src/bundle
 WORKDIR /usr/src/bundle

@@ -39,6 +39,7 @@ def run(in_dict):
 const bundleFormat = `
 language: python
 name: %s
+image: python:2.7.10-slim
 inputs:
   - name: a
     type: string
