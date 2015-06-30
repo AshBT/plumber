@@ -33,7 +33,12 @@ type templateContext struct {
 // a standalone file in the future, so we can add different language
 // types.
 const dockerfileTemplate = `
-FROM python:2.7.10-slim
+FROM google/python
+
+# install new certificates
+RUN apt-get update
+RUN apt-get install -yyq ca-certificates
+RUN update-ca-certificates
 
 RUN mkdir -p /usr/src/bundle
 WORKDIR /usr/src/bundle
@@ -107,6 +112,13 @@ def index():
 		{{ range .Plumber.Inputs }}"""{{ .Name }}""": program_data.get("""{{ .Name }}""", None), {{ end }}
 	}
 
+	history = {
+		"bundle-name": """{{ .Plumber.Name }}""",
+		"timestamp": datetime.datetime.now().isoformat(),
+		"action": "run-start"
+	}
+	data["metadata"]["history"].append(history)
+
 	# run the enhancer
 	try:
 		output = {{ .Plumber.Name }}.run(input)
@@ -118,6 +130,13 @@ def index():
 		}
 		data["metadata"]["errors"].append(error)
 		return data
+	finally:
+		history = {
+			"bundle-name": """{{ .Plumber.Name }}""",
+			"timestamp": datetime.datetime.now().isoformat(),
+			"action": "run-finish"
+		}
+		data["metadata"]["history"].append(history)
 
 	# discard any updates to the inputs
 	{{ range .Plumber.Inputs }}
