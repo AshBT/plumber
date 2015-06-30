@@ -36,8 +36,8 @@ const dockerfileTemplate = `
 FROM google/python
 
 # install new certificates
-RUN apt-get update
-RUN apt-get install -yyq ca-certificates
+RUN apt-get update -qqym
+RUN apt-get install -qqy ca-certificates
 RUN update-ca-certificates
 
 RUN mkdir -p /usr/src/bundle
