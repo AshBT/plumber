@@ -31,6 +31,7 @@ type Field struct {
 type Bundle struct {
 	Language string
 	Name     string
+	Image	 string
 	Inputs   []Field  `yaml:",flow"`
 	Outputs  []Field  `yaml:",flow"`
 	Env      []string `yaml:",flow,omitempty"`

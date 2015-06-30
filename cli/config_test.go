@@ -28,6 +28,7 @@ import (
 const goodBundle = `
 language: python
 name: foobar
+image: ubuntu
 inputs:
   - name: a
     description: none
@@ -119,6 +120,7 @@ func TestParseBundle(t *testing.T) {
 	ctx := &cli.Bundle{
 		Language: "python",
 		Name:     "foobar",
+		Image: 	  "ubuntu",
 		Inputs: []cli.Field{
 			cli.Field{
 				Name:        "a",
@@ -209,6 +211,7 @@ func TestParseBundleFromDir(t *testing.T) {
 	expected := &cli.Bundle{
 		Language: "python",
 		Name:     "foobar",
+		Image:	  "ubuntu",
 		Inputs: []cli.Field{
 			cli.Field{
 				Name:        "a",
