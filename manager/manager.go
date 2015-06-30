@@ -56,7 +56,7 @@ func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			final, err := ioutil.ReadAll(io.LimitReader(body, 1048576))
+			final, err := ioutil.ReadAll(body)
 			if err != nil {
 				panic(err)
 			}
