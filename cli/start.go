@@ -189,9 +189,9 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 	for i := len(sortedPipeline) - 1; i >= 0; i-- {
 		bundleName := sortedPipeline[i]
 		localDockerTag := ctx.GetImage(bundleName)
-		remoteDockerTag := fmt.Sprintf("gcr.io/%s/plumber-%s", projectId, bundleName)
+		remoteDockerTag := fmt.Sprintf("gcr.io/%s/plumber-%s", projectId, EscapeUnderscore(bundleName))
 		data := kubeData{
-			BundleName:     bundleName,
+			BundleName:     EscapeUnderscore(bundleName),
 			ImageName:      remoteDockerTag,
 			PlumberVersion: ctx.Version,
 			PlumberCommit:  ctx.GitCommit,
@@ -219,7 +219,7 @@ func remoteStart(ctx *Context, sortedPipeline []string, projectId string, pipeli
 		}
 
 		// append to arglist (args now in sorted order)
-		args = append(args, fmt.Sprintf("http://%s:9800", bundleName))
+		args = append(args, fmt.Sprintf("http://%s:9800", EscapeUnderscore(bundleName)))
 	}
 	// create the manager service
 	data := kubeData{
