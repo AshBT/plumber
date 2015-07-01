@@ -81,7 +81,13 @@ def info():
 
 @post('/')
 def index():
-	data = request.json
+	try:
+		data = request.json
+	except Exception as e:
+		raise HTTPResonse(
+			body = "Error '{}' from body '{}'".format(e, request.body),
+			status = 400
+		)
 
 	# validate input data
 	if data is None:
