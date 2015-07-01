@@ -220,3 +220,12 @@ func TestGetDockerHostWithDockerIface(t *testing.T) {
 		t.Errorf("GetDockerHostWithDockerIface: did not get expected IP.")
 	}
 }
+
+func TestEscapeUnderscore(t* testing.T) {
+	testStr := "my_foo_bar-DOES_work"
+	expectStr := "my-foo-bar-does-work"
+	result := cli.EscapeUnderscore(testStr)
+	if result != expectStr {
+		t.Errorf("EscapeUnderscore: escaped test string '%v' does not equal '%v'", result, expectStr)
+	}
+}

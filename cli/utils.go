@@ -153,6 +153,11 @@ func (d *Context) GetDockerHost() (string, error) {
 	}
 }
 
+// Replaces underscores with "-" and lowercases the string
+func EscapeUnderscore(a string) string {
+	return strings.ToLower(strings.Replace(a, "_", "-", -1))
+}
+
 func versionString() string {
 	versionString := version
 	if versionPrerelease != "" {
