@@ -22,6 +22,10 @@ import (
 	"syscall"
 	"testing"
 	"time"
+	"fmt"
+	"strings"
+	"log"
+	"io/ioutil"
 )
 
 // Test that the handler with no args just returns the data sent
@@ -97,6 +101,29 @@ func TestHandlerForwardsData(t *testing.T) {
 	}
 }
 
+// Test that the handler forwards fatal errors (4xx) back to the client
+// and skips subsequent bundles
+func TestHandlerErrors(t *testing.T) {
+	ts1 := httptest.NewServer(http.NotFoundHandler())
+	defer ts1.Close()
+
+	ts2 := httptest.NewServer(http.HandlerFunc(makeTestHandler("first")))
+	defer ts2.Close()
+
+	handler := createHandler([]string{ts1.URL, ts2.URL})
+	req, err := http.NewRequest("POST", "http://foobar.com", bytes.NewBufferString("{'foo': 3}"))
+	if err != nil {
+		t.Error(err)
+	}
+	w := httptest.NewRecorder()
+	handler(w, req)
+
+	if w.Code != 400 || strings.TrimSpace(w.Body.String()) != fmt.Sprintf("[%s]: Status '404' | Error '404 page not found'", ts1.URL){
+		t.Errorf("Got '%s' with status '%d'; did not get expected error status", w.Body.String(), w.Code)
+	}
+}
+
+
 func TestMainRunnerExitsGracefully(t *testing.T) {
 	// set the interrupt handler to go off after 1 second
 	go func() {
@@ -123,6 +150,7 @@ func TestMainRunnerExitsGracefully(t *testing.T) {
 // Obviously, this is not accurate in production since we forward to
 // multiple handlers.
 func BenchmarkHandler(b *testing.B) {
+	log.SetOutput(ioutil.Discard)
 	handler := createHandler(nil)
 
 	req, err := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("{'foo': 3}"))

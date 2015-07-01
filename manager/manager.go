@@ -24,6 +24,9 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"fmt"
+	"strings"
+	"time"
 )
 
 func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
@@ -35,7 +38,17 @@ func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req) // this will close the body, too
 	if err != nil {
+		// close the body before returning an error
+		defer resp.Body.Close()
 		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		msg, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("[%v]: Status '%v' | Error '%v'", dest, resp.StatusCode, strings.TrimSpace(string(msg)))
 	}
 	return resp.Body, nil
 }
@@ -43,6 +56,11 @@ func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
+
+		start := time.Now()
+		log.Printf("Received connection request from '%v'.", r.RemoteAddr)
+		defer log.Printf("Completed request in %v", time.Since(start))
+
 		if r.Body == nil || r.Method != "POST" {
 			http.NotFound(w, r)
 		} else {
@@ -52,13 +70,15 @@ func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 			for _, host := range args {
 				body, err = forwardData(host, body)
 				if err != nil {
-					panic(err)
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
 				}
 			}
 
 			final, err := ioutil.ReadAll(body)
 			if err != nil {
-				panic(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 
 			w.Header().Set("Content-Type", "application/json")
