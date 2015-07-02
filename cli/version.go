@@ -17,7 +17,7 @@ package cli
 
 // The git commit that was used to build plumb. Compiler fills it in
 // with -ldflags
-var GitCommit string
+var GitCommit = "unknown"
 
 const version = "0.1.0"
 
