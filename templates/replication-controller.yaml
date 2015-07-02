@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: {{ .BundleName }}
-        image: {{ .ImageName }}
+        image: {{ .ImageName }}:latest
         ports:
         - containerPort: 9800
           protocol: TCP
