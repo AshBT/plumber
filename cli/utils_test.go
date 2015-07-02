@@ -26,11 +26,11 @@ import (
 	"testing"
 )
 
-const testPlumberDir = "foo"
-
-const testBootstrapDir = "boot"
-
-const testKubeSubdir = "k8s"
+const (
+	testPlumberDir = "foo"
+	testBootstrapDir = "boot"
+	testKubeSubdir = "k8s"
+)
 
 // mock for cli context (used for testing)
 // uses temp directories

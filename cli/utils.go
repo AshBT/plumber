@@ -40,11 +40,11 @@ type Context struct {
 	KubectlCmd    string // the command for running `kubectl` in a shell
 }
 
-const plumberDir = ".plumber"
-
-const bootstrapDir = ".plumber-bootstrap"
-
-const k8sDir = "k8s"
+const (
+	plumberDir = ".plumber"
+	bootstrapDir = ".plumber-bootstrap"
+	k8sDir = "k8s"
+)
 
 // The default context stores all plumber pipelines in the user's
 // home directory at ~/.plumber; all kubernetes files are stored at
