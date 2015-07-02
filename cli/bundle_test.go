@@ -103,11 +103,12 @@ func TestBundle(t *testing.T) {
 	resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"data": {"a": "trusty"}}`))
 	if err != nil {
 		t.Error(err)
-	}
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-	result := buf.String()
-	if !strings.Contains(result, `{"a": "trusty", "b": "echo trusty"}`) {
-		t.Errorf("Bundle: Got '%s'; did not contain expected response", result)
+	} else {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		result := buf.String()
+		if !strings.Contains(result, `{"a": "trusty", "b": "echo trusty"}`) {
+			t.Errorf("Bundle: Got '%s'; did not contain expected response", result)
+		}
 	}
 }
