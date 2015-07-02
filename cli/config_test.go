@@ -39,6 +39,8 @@ outputs:
     type: int
 env:
   - SECRET=1234
+before_install:
+  - pip install foobar
 install:
   - make -j4
   - make install`
@@ -137,6 +139,7 @@ func TestParseBundle(t *testing.T) {
 		},
 		Env:     []string{"SECRET=1234"},
 		Install: []string{"make -j4", "make install"},
+		Before_Install: []string{"pip install foobar"},
 	}
 	parseBundle(t, ctx, goodBundle)
 }
@@ -161,6 +164,7 @@ func TestParseOptBundle(t *testing.T) {
 		},
 		Env:     nil,
 		Install: nil,
+		Before_Install: nil,
 	}
 	parseBundle(t, ctx, optBundle)
 }
@@ -228,6 +232,7 @@ func TestParseBundleFromDir(t *testing.T) {
 		},
 		Env:     []string{"SECRET=1234"},
 		Install: []string{"make -j4", "make install"},
+		Before_Install: []string{"pip install foobar"},
 	}
 
 	ctx, err := cli.ParseBundleFromDir(tempDir)

@@ -42,7 +42,20 @@ FROM google/python
 RUN mkdir -p /usr/src/bundle
 WORKDIR /usr/src/bundle
 
+{{ if .Plumber.Before_Install }}
+{{ range .Plumber.Before_Install }}
+RUN {{ . }}
+{{ end }}
+{{ end }}
+
+RUN pip install bottle
+EXPOSE 9800
+{{ range .Plumber.Env }}
+ENV {{ . }}
+{{ end }}
+
 COPY . /usr/src/bundle
+
 {{ if .Plumber.Install }}
 {{ range .Plumber.Install }}
 RUN {{ . }}
@@ -50,11 +63,7 @@ RUN {{ . }}
 {{ else }}
 RUN pip install -r requirements.txt
 {{ end }}
-RUN pip install bottle
-EXPOSE 9800
-{{ range .Plumber.Env }}
-ENV {{ . }}
-{{ end }}
+
 CMD ["python", "{{ .Wrapper }}"]
 `
 

@@ -36,6 +36,7 @@ type Bundle struct {
 	Outputs  []Field  `yaml:",flow"`
 	Env      []string `yaml:",flow,omitempty"`
 	Install  []string `yaml:",flow,omitempty"`
+	Before_Install []string `yaml:",flow,omitempty"`
 }
 
 const bundleConfig = ".plumb.yml"

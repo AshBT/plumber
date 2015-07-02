@@ -78,12 +78,13 @@ func TestStart(t *testing.T) {
 		resp, err := http.Post(fmt.Sprintf("http://%s:9800", hostIp), "application/json", bytes.NewBufferString(`{"data": {"a": "trusty"}}`))
 		if err != nil {
 			t.Error(err)
-		}
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
-		result := buf.String()
-		if !strings.Contains(result, `{"a": "trusty", "b": "echo trusty"}`) {
-			t.Errorf("TestStart: Got '%s'; did not contain expected response", result)
+		} else {
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(resp.Body)
+			result := buf.String()
+			if !strings.Contains(result, `{"a": "trusty", "b": "echo trusty"}`) {
+				t.Errorf("TestStart: Got '%s'; did not contain expected response", result)
+			}
 		}
 	}()
 
@@ -129,26 +130,22 @@ func TestBundlesToGraph(t *testing.T) {
 		&cli.Bundle{"python", "a", "",
 			[]cli.Field{cli.Field{"text", "", "",},},
 			[]cli.Field{cli.Field{"dude", "", "",},},
-			[]string{},
-			[]string{},
+			nil, nil, nil,
 		},
 		&cli.Bundle{"python", "b", "",
 			[]cli.Field{cli.Field{"id", "", "",},},
 			[]cli.Field{cli.Field{"text", "", "",},},
-			[]string{},
-			[]string{},
+			nil, nil, nil,
 		},
 		&cli.Bundle{"python", "c", "",
 			[]cli.Field{cli.Field{"text", "", "",},},
 			[]cli.Field{cli.Field{"bar", "", "",},},
-			[]string{},
-			[]string{},
+			nil, nil, nil,
 		},
 		&cli.Bundle{"python", "d", "",
 			[]cli.Field{cli.Field{"id", "", "",},cli.Field{"text", "", "",}, },
 			[]cli.Field{cli.Field{"foo", "", "",},},
-			[]string{},
-			[]string{},
+			nil, nil, nil,
 		},
 	}
 
