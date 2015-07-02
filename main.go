@@ -124,11 +124,10 @@ pushed to your project's private repository.`,
 		},
 		{
 			Name:   "bundle",
-			Usage:  "bundle a node for use in a pipeline managed by plumber",
-			Before: createRequiredArgCheck(exactly(1), "Please provide a bundle path."),
+			Usage:  "bundle nodes for use in a pipeline managed by plumber",
+			Before: createRequiredArgCheck(atLeast(1), "Please provide bundle path[s]."),
 			Action: func(c *cli.Context) {
-				path := c.Args().First()
-				if err := plumberCtx.Bundle(path); err != nil {
+				if err := plumberCtx.Bundle(c.Args()...); err != nil {
 					panic(err)
 				}
 			},

@@ -59,7 +59,14 @@ CMD ["python", "{{ .Wrapper }}"]
 `
 
 const wrapperTemplate = `
-import {{ .Plumber.Name }}
+try:
+	import {{ .Plumber.Name }}
+except Exception as e:
+	class Dummy(object):
+		def run(self, node):
+			raise Exception("Failed to import '{{ .Plumber.Name}}' due to '{}'".format(e))
+	{{ .Plumber.Name }} = Dummy()
+
 import datetime
 from bottle import post, route, run, request, HTTPResponse
 
@@ -189,20 +196,10 @@ func removeTempFile(f *os.File) {
 	}
 }
 
-// Bundle stuff...
-// BUG(echu): need to figure out how to handle conflicts in bundle names
-func (ctx *Context) Bundle(bundlePath string) error {
-	log.Printf("==> Creating bundle from '%s'", bundlePath)
-	defer log.Printf("<== Bundling complete.")
-
+func bundleOne(ctx *Context, bundlePath string) error {
 	log.Printf(" |  Parsing bundle config.")
 	bundleConfig, err := ParseBundleFromDir(bundlePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			log.Printf("    Could not find '%s' in path '%s'.", bundleConfig, bundlePath)
-			log.Printf("    Did not bundle '%s'.", bundlePath)
-			return nil
-		}
 		return err
 	}
 	log.Printf("    %v", bundleConfig)
@@ -254,5 +251,33 @@ func (ctx *Context) Bundle(bundlePath string) error {
 		return err
 	}
 	log.Printf("    Container '%s' built.", ctx.GetImage(bundleConfig.Name))
+	return nil
+}
+
+// Bundle stuff...
+// BUG(echu): need to figure out how to handle conflicts in bundle names
+func (ctx *Context) Bundle(paths ...string) error {
+	log.Printf("==> Creating bundles from '%v'", paths)
+	defer log.Printf("<== Bundling complete.")
+
+	skipped := []string{}
+	for _, bundlePath := range paths {
+		log.Printf(" |  Bundling '%s'", bundlePath)
+		if err := bundleOne(ctx, bundlePath); err != nil {
+			if os.IsNotExist(err) {
+				log.Printf("    Could not find '%s' in path '%s'.", bundleConfig, bundlePath)
+				log.Printf("    Did not bundle '%s'.", bundlePath)
+				skipped = append(skipped, bundlePath)
+			} else {
+				return err
+			}
+		} else {
+			log.Printf("    Bundling completed.")
+		}
+	}
+
+	if len(skipped) > 0 {
+		log.Printf(" *   Skipped '%v'", skipped)
+	}
 	return nil
 }
