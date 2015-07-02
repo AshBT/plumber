@@ -118,11 +118,37 @@ func TestHandlerErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 	handler(w, req)
 
-	if w.Code != 400 || strings.TrimSpace(w.Body.String()) != fmt.Sprintf("[%s]: Status '404' | Error '404 page not found'", ts1.URL){
+	if w.Code != 400 || strings.TrimSpace(w.Body.String()) != fmt.Sprintf("[%s]: Error '404 page not found' | Status '404'", ts1.URL){
 		t.Errorf("Got '%s' with status '%d'; did not get expected error status", w.Body.String(), w.Code)
 	}
 }
 
+// Test what happens if the "handler" crashes and disconnects clients
+func TestHandlerCrash(t *testing.T) {
+	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// do nothing after 1 second
+		time.Sleep(1 * time.Second)
+		w.Write([]byte("hello"))
+		r.Body.Close()
+	}))
+	defer ts1.Close()
+
+	handler := createHandler([]string{ts1.URL})
+	req, err := http.NewRequest("POST", "http://foobar.com", bytes.NewBufferString("{'foo': 3}"))
+	if err != nil {
+		t.Error(err)
+	}
+	w := httptest.NewRecorder()
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		ts1.CloseClientConnections()
+	}()
+	handler(w, req)
+
+	if w.Code != 400 || strings.TrimSpace(w.Body.String()) != fmt.Sprintf("[%v]: Error 'Post %v: EOF'", ts1.URL, ts1.URL){
+		t.Errorf("Got '%s' with status '%d'; did not get expected error status", w.Body.String(), w.Code)
+	}
+}
 
 func TestMainRunnerExitsGracefully(t *testing.T) {
 	// set the interrupt handler to go off after 1 second

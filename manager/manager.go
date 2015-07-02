@@ -29,26 +29,30 @@ import (
 	"time"
 )
 
+var (
+	PlumberVersion = "unknown"
+	PlumberCommit  = "unknown"
+)
+
 func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", dest, body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req) // this will close the body, too
 	if err != nil {
-		// close the body before returning an error
-		defer resp.Body.Close()
-		return nil, err
+		return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
 	}
 	if resp.StatusCode != 200 {
 		msg, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
+
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
 		}
-		return nil, fmt.Errorf("[%v]: Status '%v' | Error '%v'", dest, resp.StatusCode, strings.TrimSpace(string(msg)))
+		return nil, fmt.Errorf("[%v]: Error '%v' | Status '%v'", dest, strings.TrimSpace(string(msg)), resp.StatusCode)
 	}
 	return resp.Body, nil
 }
@@ -59,13 +63,21 @@ func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 
 		start := time.Now()
 		log.Printf("Received connection request from '%v'.", r.RemoteAddr)
-		defer log.Printf("Completed request in %v", time.Since(start))
+		defer func() {
+			// this is wrapped in a closure so we evaluate time.Since
+			// when this is called
+			log.Printf("Completed request in %v", time.Since(start))
+		}()
 
 		if r.Body == nil || r.Method != "POST" {
 			http.NotFound(w, r)
 		} else {
 			body := r.Body
-			defer body.Close()
+			defer func() {
+				if body != nil {
+					body.Close()
+				}
+			}()
 
 			for _, host := range args {
 				body, err = forwardData(host, body)
@@ -114,6 +126,8 @@ func main() {
 			log.Printf("'%v' is not a valid url, discarding", arg)
 		}
 	}
+	log.Printf("[Version: %s]", PlumberVersion)
+	log.Printf("[Commit: %s]", PlumberCommit)
 	log.Printf("Forwarding JSONs to '%v'.", args)
 
 	http.HandleFunc("/", createHandler(args))
