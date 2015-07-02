@@ -68,9 +68,9 @@ func (ctx *Context) Bootstrap() error {
 	if err := writeAsset("README.md", ctx.BootstrapDir); err != nil {
 		return err
 	}
-	if err := writeAsset("manager_test.go", ctx.BootstrapDir); err != nil {
-		return err
-	}
+	// if err := writeAsset("manager_test.go", ctx.BootstrapDir); err != nil {
+	// 	return err
+	// }
 	log.Printf("    Done")
 
 	if err := shell.RunAndLog(ctx.DockerCmd,
@@ -80,6 +80,8 @@ func (ctx *Context) Bootstrap() error {
 		"/var/run/docker.sock:/var/run/docker.sock",
 		"-v",
 		fmt.Sprintf("%s:/src", ctx.BootstrapDir),
+		"-e",
+		fmt.Sprintf("LDFLAGS=-s -X main.PlumberVersion %s -X main.PlumberCommit %s", versionString(), GitCommit),
 		"centurylink/golang-builder",
 		ctx.GetManagerImage()); err != nil {
 		return err
