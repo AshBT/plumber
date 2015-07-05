@@ -48,7 +48,7 @@ RUN {{ . }}
 {{ end }}
 {{ end }}
 
-RUN pip install bottle
+RUN pip install bottle gevent
 EXPOSE 9800
 {{ range .Plumber.Env }}
 ENV {{ . }}
@@ -68,6 +68,8 @@ CMD ["python", "{{ .Wrapper }}"]
 `
 
 const wrapperTemplate = `
+from gevent import monkey; monkey.patch_all()
+
 try:
 	import {{ .Plumber.Name }}
 except Exception as e:
@@ -100,7 +102,7 @@ def index():
 	try:
 		data = request.json
 	except Exception as e:
-		raise HTTPResonse(
+		raise HTTPResponse(
 			body = "Error '{}' from body '{}'".format(e, request.body),
 			status = 400
 		)
@@ -161,7 +163,7 @@ def index():
 
 	# discard any updates to the inputs
 	{{ range .Plumber.Inputs }}
-	output.pop("""{{ .Name }}""")
+	output.pop("""{{ .Name }}""", None)
 	{{ end }}
 
 	# update the program data
@@ -191,7 +193,7 @@ def index():
 		data["metadata"]["history"].append(history)
 	return data
 
-run(host='0.0.0.0', port=9800)
+run(host='0.0.0.0', port=9800, server='gevent')
 `
 
 func removeTempFile(f *os.File) {

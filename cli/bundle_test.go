@@ -40,6 +40,8 @@ const bundleFormat = `
 language: python
 name: %s
 image: python:2.7.10-slim
+before_install:
+  - apt-get update && apt-get install -qqy gcc
 inputs:
   - name: a
     type: string
