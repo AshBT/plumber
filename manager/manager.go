@@ -16,6 +16,7 @@
 package main // import "github.com/qadium/plumber/manager"
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"log"
@@ -36,15 +37,25 @@ var (
 
 func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", dest, body)
+
+	// read the body
+	jsonData, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
+	}
+
+	req, err := http.NewRequest("POST", dest, bytes.NewReader(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.ContentLength = int64(len(jsonData))
+	
 	resp, err := client.Do(req) // this will close the body, too
 	if err != nil {
 		return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
 	}
+
 	if resp.StatusCode != 200 {
 		msg, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
