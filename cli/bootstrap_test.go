@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"testing"
 	"time"
+	"os"
 )
 
 // this is a *functional test*
@@ -39,7 +40,19 @@ func TestBootstrap(t *testing.T) {
 	if err := ctx.Bootstrap(); err != nil {
 		t.Errorf("Bootstrap: Got an error during bootstrap: '%v'", err)
 	}
-	defer shell.RunAndLog(ctx.DockerCmd, "rmi", ctx.GetManagerImage())
+	// remove the manager image if we're on travis
+	// note that this is a "hack" to avoid space requirements on travis
+	// since we can bootstrap once, but not twice?
+	if os.Getenv("TRAVIS") == "" {
+		defer shell.RunAndLog(ctx.DockerCmd, "rmi", ctx.GetManagerImage())
+	}
+
+	// if on travis, try to remove the golang container
+	if os.Getenv("TRAVIS") != "" {
+		if err := shell.RunAndLog(ctx.DockerCmd, "rmi", "centurylink/golang-builder"); err != nil {
+			t.Errorf("Bootstrap: Got an error removing golang-builder: '%v'", err)
+		}
+	}
 
 	// step 3. run the image (it *should* just echo in response)
 	if err := shell.RunAndLog(ctx.DockerCmd, "run", "-d", "-p", "9800:9800", "--name", "plumber-test", ctx.GetManagerImage()); err != nil {

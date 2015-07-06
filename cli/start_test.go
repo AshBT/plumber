@@ -26,9 +26,17 @@ import (
 	"syscall"
 	"testing"
 	"time"
+	"os"
 )
 
 func createTestBundleAndPipeline(t *testing.T, ctx *cli.Context, pipeline, bundleName, tempDir string) {
+	// bootstrap the manager if not on travis
+	if os.Getenv("TRAVIS") == "" {
+		if err := ctx.Bootstrap(); err != nil {
+			t.Errorf("CreateTestBundleAndPipeline: Got an error during bootstrap: '%v'", err)
+		}
+	}
+
 	// create a pipeline
 	if err := ctx.Create(pipeline); err != nil {
 		t.Errorf("CreateTestBundleAndPipeline: error creating '%v'", err)
@@ -43,11 +51,6 @@ func createTestBundleAndPipeline(t *testing.T, ctx *cli.Context, pipeline, bundl
 	// add that bundle to the pipeline
 	if err := ctx.Add(pipeline, tempDir); err != nil {
 		t.Errorf("CreateTestBundleAndPipeline: '%v'", err)
-	}
-
-	// bootstrap the manager
-	if err := ctx.Bootstrap(); err != nil {
-		t.Errorf("CreateTestBundleAndPipeline: Got an error during bootstrap: '%v'", err)
 	}
 }
 

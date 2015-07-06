@@ -39,9 +39,8 @@ def run(in_dict):
 const bundleFormat = `
 language: python
 name: %s
-image: python:2.7.10-slim
 before_install:
-  - apt-get update && apt-get install -qqy gcc
+  - apt-get install -qqy python-gevent
 inputs:
   - name: a
     type: string
