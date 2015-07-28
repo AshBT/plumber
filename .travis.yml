@@ -1,11 +1,13 @@
 language: go
 go:
   - tip
-sudo: false
+sudo: true
 env:
   global:
+    - BRANCH=v1.0.0
     - UML_FIG=0
     - UML_DOCKERCOMPOSE=0
+    - QUIET=1
 before_install:
   - git config --global user.email "ci@bot.com"
   - git config --global user.name "Plumber Travis CI"
