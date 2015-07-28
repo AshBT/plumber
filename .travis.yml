@@ -1,6 +1,7 @@
 language: go
 go:
   - tip
+sudo: false
 env:
   global:
     - UML_FIG=0
