@@ -35,8 +35,15 @@ var (
 	PlumberCommit  = "unknown"
 )
 
-func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
-	client := &http.Client{}
+func forwardData(client *http.Client, dest string, body io.ReadCloser) (io.ReadCloser, error) {
+	// time data forwarding
+	start := time.Now()
+	log.Printf("Forwarding to '%v'.", dest)
+	defer func() {
+		// this is wrapped in a closure so we evaluate time.Since
+		// when this is called
+		log.Printf("Received response from '%v' in %v", dest, time.Since(start))
+	}()
 
 	// read the body
 	jsonData, err := ioutil.ReadAll(body)
@@ -50,7 +57,7 @@ func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.ContentLength = int64(len(jsonData))
-	
+
 	resp, err := client.Do(req) // this will close the body, too
 	if err != nil {
 		return nil, fmt.Errorf("[%v]: Error '%v'", dest, err)
@@ -69,6 +76,8 @@ func forwardData(dest string, body io.ReadCloser) (io.ReadCloser, error) {
 }
 
 func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
+	// create an http client for us to forward requests elsewhere
+	c := &http.Client{}
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
 
@@ -91,7 +100,7 @@ func createHandler(args []string) func(w http.ResponseWriter, r *http.Request) {
 			}()
 
 			for _, host := range args {
-				body, err = forwardData(host, body)
+				body, err = forwardData(c, host, body)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
@@ -137,6 +146,7 @@ func main() {
 			log.Printf("'%v' is not a valid url, discarding", arg)
 		}
 	}
+
 	log.Printf("[Version: %s]", PlumberVersion)
 	log.Printf("[Commit: %s]", PlumberCommit)
 	log.Printf("Forwarding JSONs to '%v'.", args)
