@@ -31,9 +31,10 @@ func logBuffer(prefix string, pipe io.ReadCloser) {
 	for in.Scan() {
 		log.Printf("    %s %s", prefix, in.Text())
 	}
-	if err := in.Err(); err != nil {
-		log.Printf("    error %s", err)
-	}
+	// ignore any errors
+	// if err := in.Err(); err != nil {
+	// 	log.Printf("    error %s", err)
+	// }
 }
 
 func RunAndLog(name string, args ...string) error {
